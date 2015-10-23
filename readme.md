@@ -17,7 +17,9 @@ This is the repository for a Mozfest 2015 web feature that is aimed to create an
 * a little interactive "game" in which Mozfesters can check-in to their session - each check-in reveals pixel-by-pixel an image of something really really awesome ;)
 * kinda like the [million-dollar homepage](https://en.wikipedia.org/wiki/The_Million_Dollar_Homepage)
 
+**Collaborative MozFest Image Puzzle**:
 
+* a little interactive puzzle that prompts people with a list of "items" to photograph throughout the conference - each photograph submitted fits into a puzzle that when completed reveals some image of something really awesome or a location to go party :)
 
 
 
