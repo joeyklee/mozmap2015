@@ -35,9 +35,18 @@ app.routers.MainRouter = Backbone.Router.extend({
         var stations = results.filter(function(session) {
           return session.pathways.length > 0;
         }).map(function(session) {
-          var lines = session.pathways.split(', [Pathway] ');
+          var lines = session.pathways
+            .split(',') // split joined pathways
+            .map(function(x) {
+              return x.trim();
+            }) // handle leading/trailing spaces
+            .filter(function(x) {
+              return x.length > 0; // remove empty strings
+            });
+            console.log(lines);
           return { label: session.title, lines: lines };
         });
+
         params = $.extend({}, config, params, { stations: stations });
         params.title = 'MozFest 2015 Pathways Map';
         app.views.main = new app.views.TransitAddView(params);
