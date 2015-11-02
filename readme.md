@@ -11,6 +11,8 @@ This is the repository for a Mozfest 2015 web feature that is aimed to create an
 
 * At the conference people will be flying around visiting all the dozens of different sessions happening at a time. As they get to each session, they could check-in to our little map app which will map their trajectory (or path) throughout Mozfest. At the end, they could visualize their path and the paths of others to see "where they've been" during MozFest. 
 	* the style of the path could look something like a subway map with lines and nodes like this [Processing sketch](http://www.generative-gestaltung.de/P_3_1_2_02)).  
+	* or [like this](http://brianfoo.com/transit/)
+		*[ an example made with the transit memory tool related to moz fest could look like this](http://memoryunderground.com/map/a2obgt6k/test---mozzy)
 
 **Collaborative Treasure Map**:
 
