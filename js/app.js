@@ -32,27 +32,14 @@ app.routers.MainRouter = Backbone.Router.extend({
     params = helper.parseQueryString(params);
     $.getJSON("http://mozilla.github.io/mozfest-schedule-app/sessions.json")
       .done(function(results) {
-        var sessions = results.filter(function(session) {
-          return session.pathways.length > 0;
-        }).map(function(session) {
-          var pathways = session.pathways
-            .split(/(\,| \[youthZone\] )/g) // split joined pathways
-            .map(function(x) {
-              return x
-                .replace('[MLN]','') // remove in-pathway labels
-                .replace('[Pathway]','')
-                .replace('[youthZone]','')
-                .replace('Pathway - ','')
-                .replace('Pathway Craft - ','')
-                .trim(); // handle leading/trailing spaces
-            })
-            .filter(function(x) {
-              return x.length > 0; // remove empty strings
-            });
-
-          session.pathways = pathways;
-          return session;
-        });
+        var sessions = results
+          .filter(function(session) {
+            return session.pathways.length > 0
+              && session.scheduleblock.length > 0
+              && session.hasOwnProperty('start')
+              && session.start.length > 0;
+          })
+          .map(window.helper.mungeSessionData);
 
         params = $.extend({}, config, params, { stations: sessions });
         params.title = 'MozFest 2015 Pathways Map';
