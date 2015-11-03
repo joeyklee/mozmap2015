@@ -36,10 +36,16 @@ app.routers.MainRouter = Backbone.Router.extend({
           return session.pathways.length > 0;
         }).map(function(session) {
           var pathways = session.pathways
-            .split(',') // split joined pathways
+            .split(/(\,| \[youthZone\] )/g) // split joined pathways
             .map(function(x) {
-              return x.trim();
-            }) // handle leading/trailing spaces
+              return x
+                .replace('[MLN]','') // remove in-pathway labels
+                .replace('[Pathway]','')
+                .replace('[youthZone]','')
+                .replace('Pathway - ','')
+                .replace('Pathway Craft - ','')
+                .trim(); // handle leading/trailing spaces
+            })
             .filter(function(x) {
               return x.length > 0; // remove empty strings
             });
