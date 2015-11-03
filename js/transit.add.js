@@ -690,7 +690,7 @@ app.views.TransitAddView = Backbone.View.extend({
         });
         // add line label
         legend.labels.push({
-          text: line.label + " Line",
+          text: line.label,
           labelX: colOffset+x1+pointRadiusLarge*2+gridUnit*5,
           labelY: y2,
           fontSize: fontSize,
@@ -710,9 +710,6 @@ app.views.TransitAddView = Backbone.View.extend({
   },
 
   makeLines: function(stations, width, height, options){
-    var stack = new Error().stack;
-    console.log("PRINTING CALL STACK");
-    console.log( stack );
     var that = this,
         // options
         paddingX = options.padding[0],
@@ -741,11 +738,11 @@ app.views.TransitAddView = Backbone.View.extend({
     _.each(stations, function(station, i){
       var nextY = paddingY + i * yUnit, // next available yUnit
           nextX = that.getNextX(boundaries, i, stationCount, activeW, minXDiff), // random x
-          lineCount = station.lines.length,
+          lineCount = station.pathways.length,
           firstX = nextX;
 
       // loop through station's lines
-      _.each(station.lines, function(lineLabel, j){
+      _.each(station.pathways, function(lineLabel, j){
         // if line already exists
         var foundLine = _.findWhere(lines, {label: lineLabel}),
             prevPoint = false,
@@ -780,7 +777,7 @@ app.views.TransitAddView = Backbone.View.extend({
         // for first line, just add target point
         if (j===0) {
           firstX = newPoint.x;
-          newPoint.label = station.label; // only the target point of the first line gets label
+          newPoint.label = station.title; // only the target point of the first line gets label
           newPoint.className += " primary";
           if (lineCount >= hubSize) {
             newPoint.hubSize = lineCount;
@@ -834,7 +831,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
       });
 
-      prevLines = station.lines;
+      prevLines = station.pathways;
     });
 
     // console.log(lines)
@@ -866,7 +863,7 @@ app.views.TransitAddView = Backbone.View.extend({
     // loop through each point
     _.each(stations, function(station, i){
       // sort all the lines consistently
-      station.lines = _.sortBy(station.lines, function(lineLabel){ return lineLabels.indexOf(lineLabel); });
+      station.pathways = _.sortBy(station.pathways, function(lineLabel){ return lineLabels.indexOf(lineLabel); });
     });
 
     return stations;
