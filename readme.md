@@ -28,7 +28,7 @@ This is the repository for a Mozfest 2015 web feature that is aimed to create an
 
 ## Resources
 
-- [Official Mozfest schedule app](http://mozilla.github.io/mozfest-schedule-app]
+- [Official Mozfest schedule app](http://mozilla.github.io/mozfest-schedule-app)
 - [Schedule app session data (JSON)](http://mozilla.github.io/mozfest-schedule-app/sessions.json)
  
 
