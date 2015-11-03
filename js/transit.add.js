@@ -122,6 +122,43 @@ app.views.TransitAddView = Backbone.View.extend({
     return labels;
   },
 
+  getXScale: function(options, width) {
+    var mindate = moment("2015-11-06 00:01 AM").toDate(),
+        maxdate = moment("2015-11-08 11:59 PM").toDate(),
+        paddingX = options.padding[0];
+
+    var xScale = d3.time.scale();
+    xScale.domain([mindate, maxdate]);
+    xScale.rangeRound([paddingX, width - paddingX]);
+    xScale.clamp(true);
+
+    return xScale;
+  },
+
+  drawXAxis: function(svg, options, height, width) {
+    var that = this,
+      paddingY = options.padding[1];
+
+    var xAxis = d3.svg.axis()
+       .orient("bottom")
+       .scale(that.getXScale(options, width));
+
+    // draw x axis with labels and move to the bottom of the chart area
+    svg.append("g")
+      .attr("class", "xaxis")   // give it a class so it can be used to select only xaxis labels  below
+      .attr("transform", "translate(0," + (height - paddingY) + ")")
+      .call(xAxis);
+
+    // now rotate text on x axis
+    // solution based on idea here: https://groups.google.com/forum/?fromgroups#!topic/d3-js/heOBPQF3sAY
+    // first move the text left so no longer centered on the tick
+    // then rotate up to get 45 degrees.
+    svg.selectAll(".xaxis text")  // select all the text elements for the xaxis
+      .attr("transform", function(d) {
+        return "translate(" + height*-2 + "," + height + ")rotate(-45)";
+    });
+  },
+
   addLineStyles: function(lines, options){
     var strokeOpacity = options.strokeOpacity,
         strokeWidth = options.strokeWidth;
@@ -294,6 +331,7 @@ app.views.TransitAddView = Backbone.View.extend({
     this.drawDots(svg, dots, options);
     this.drawRects(svg, rects, options);
     this.drawLabels(svg, labels, options);
+    this.drawXAxis(svg, options, height, width);
   },
 
   exportSVG: function(){
@@ -740,15 +778,20 @@ app.views.TransitAddView = Backbone.View.extend({
         yUnit = Math.floor(activeH/stationCount),
         // initializers
         lines = [],
-        prevLines = [];
+        prevLines = [],
+        xScale = that.getXScale(options, width);
+
+    console.log(xScale.invert(2000));
+    console.log(stations[0].datetime.toDate());
 
     // ensure y-unit is 2 or more
     if (yUnit<2) yUnit = 2;
 
     // loop through stations
     _.each(stations, function(station, i){
+      // TODO: make Y segregate by space (have a region of y for each space)
       var nextY = paddingY + i * yUnit, // next available yUnit
-          nextX = that.getNextX(boundaries, i, stationCount, activeW, minXDiff), // random x
+          nextX = xScale(station.datetime.toDate()), // random x
           lineCount = station.pathways.length,
           firstX = nextX;
 
@@ -766,14 +809,9 @@ app.views.TransitAddView = Backbone.View.extend({
           prevPoint = _.last(foundLine.points);
         }
 
-        // if line is in previous lines, it will be straight
-        if (prevLines.indexOf(lineLabel)>=0 && prevPoint) {
-          nextX = prevPoint.x;
-
-        // if line already exists, make sure X is within 20% of previous X
-        } else if (prevPoint) {
-          nextX = that.getNextX(boundaries, i, stationCount, activeW, minXDiff, prevPoint);
-        }
+        // // if line is in previous lines, it will be straight
+        // if (prevLines.indexOf(lineLabel)>=0 && prevPoint) {
+        //   nextX = prevPoint.x;
 
         // init new point
         newPoint = {
@@ -845,8 +883,6 @@ app.views.TransitAddView = Backbone.View.extend({
       prevLines = station.pathways;
     });
 
-    // console.log(lines)
-
     return lines;
   },
 
@@ -895,7 +931,7 @@ app.views.TransitAddView = Backbone.View.extend({
         break;
     }
     return {
-      x: x + length * x_direction,
+      x: x,
       y: y + length * y_direction
     };
   }
