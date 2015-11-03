@@ -29,6 +29,9 @@ app.views.TransitAddView = Backbone.View.extend({
 
     // add listeners
     this.addListeners();
+
+    // tuncate labels
+    this.truncateLabels();
   },
 
   addDotStyles: function(dots, options){
@@ -155,6 +158,14 @@ app.views.TransitAddView = Backbone.View.extend({
         default:
           break;
       }
+    });
+  },
+
+  truncateLabels: function(){
+    $(function(){
+      $('.station, .legend-label').succinct({
+        size: 30
+      });
     });
   },
 
@@ -696,7 +707,7 @@ app.views.TransitAddView = Backbone.View.extend({
           fontSize: fontSize,
           anchor: "start",
           type: "legend",
-          className: pointClassName
+          className: pointClassName + ' legend-label'
         });
 
         y2+=lineHeight;
