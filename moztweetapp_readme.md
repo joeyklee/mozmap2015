@@ -23,7 +23,16 @@ npm install
 ```
 
 ### Add in the twitter api keys and credentials:
-<< get them from joey>>
+<< get them from joey and add them in>>
+```
+var T = new Twit({
+            consumer_key: '', // API key
+            consumer_secret: '', // API secret
+            access_token: '',
+            access_token_secret: ''
+});
+```
+
 
 ### Run the app:
 ```
