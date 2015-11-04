@@ -1,7 +1,7 @@
 var palette = [];
 var config = {
-    "width": 10000,
-    "height": 3600,
+    "width": 3000,
+    "height": 1600,
     "bgColor": "#f2e9b8",
     "padding": [200, 200],
     "textColor": "#000000",
@@ -12,7 +12,7 @@ var config = {
     "maxPointsPerLine": 32,
     "minTextLength": 1,
     "maxTextLength": 24,
-    "pathInterpolation": "linear", // linear, basis, cardinal, monotone
+    "pathInterpolation": "step-after", // linear, basis, cardinal, monotone
     "pointColor": "#ffffff",
     "pointColorInverse": "#444444",
     "borderColor": "#444444",

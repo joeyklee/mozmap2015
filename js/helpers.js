@@ -100,6 +100,38 @@
     }
     session.datetime = moment(date + ' ' + session.start);
 
+    // tidy space
+    session.space = helper.tidySpaceName(session.space);
+
     return session;
   };
+
+  helper.tidySpaceName = function(name) {
+    return helper.spaces[name];
+  };
+
+  helper.spaces = {
+    "Building Participation": "Building Participation",
+    "Digital Citizenship": "Digital Citizenship",
+    "Journalism": "Journalism",
+    "Localisation": "Localisation",
+    "Mozilla Learning Networks": "Mozilla Learning Networks",
+    "Open Science": "Science",
+    "The Global Village": "Global Village",
+    "Voices of Diverse Leaders": "Diverse Leaders",
+    "youthZone - Through the lens of youths": "Youth Zone"
+  };
+
+  helper.getDateTimes = function(sessions) {
+    var times = sessions
+      .map(function(s) { return s.datetime; })
+      .sort(helper.ascending)
+      .map(function(s) { return s.format('dddd hh:mm'); });
+    return _.uniq(times, true);
+  };
+
+  helper.ascending = function (l, r)  {
+    return (l > r) ? 1 : (l < r) ? -1 : 0;
+  };
+
 })();

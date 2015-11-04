@@ -36,10 +36,11 @@ app.routers.MainRouter = Backbone.Router.extend({
           .filter(function(session) {
             return session.pathways.length > 0
               && session.scheduleblock.length > 0
-              && session.hasOwnProperty('start')
-              && session.start.length > 0;
+              && session.start && session.start.length > 0
+              && session.space && session.space.length > 0;
           })
           .map(window.helper.mungeSessionData);
+        sessions = _.sortBy(sessions, 'datetime');
 
         params = $.extend({}, config, params, { stations: sessions });
         params.title = 'MozFest 2015 Pathways Map';

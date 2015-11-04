@@ -18,7 +18,7 @@ app.views.TransitAddView = Backbone.View.extend({
     lines = _.union(lines, endLines);
 
     // draw the svg map
-    this.drawMap(lines, legend, width, height, options);
+    this.drawMap(stations, lines, legend, width, height, options);
 
     if (options.animate) {
       this.animateMap();
@@ -122,26 +122,87 @@ app.views.TransitAddView = Backbone.View.extend({
     return labels;
   },
 
-  getXScale: function(options, width) {
-    var mindate = moment("2015-11-06 00:01 AM").toDate(),
-        maxdate = moment("2015-11-08 11:59 PM").toDate(),
-        paddingX = options.padding[0];
+  getXScale: function(stations, options, width) {
+    var paddingX = options.padding[0];
+    var times = helper.getDateTimes(stations);
 
-    var xScale = d3.time.scale();
-    xScale.domain([mindate, maxdate]);
-    xScale.rangeRound([paddingX, width - paddingX]);
-    xScale.clamp(true);
+    var xScale = d3.scale.ordinal()
+      .domain(times)
+      .rangePoints([paddingX, width - paddingX]);
 
     return xScale;
   },
 
-  drawXAxis: function(svg, options, height, width) {
+  maxConcurrentSessions: function(sessions) {
+    // group sessions by space and time
+    var times = {};
+    sessions.forEach(function(s) {
+      if (!times[s.space]) {
+        times[s.space] = {};
+      }
+      if (!times[s.space][s.datetime]) {
+        times[s.space][s.datetime] = [];
+      } else {
+        times[s.space][s.datetime].push(s);
+      }
+    });
+    // count maximum concurrent sessions in each space
+    maxes = {};
+    for (var space in times) {
+      maxes[space] = 0;
+      var spacetime = times[space];
+      for (var datetime in spacetime) {
+        var timesessions = spacetime[datetime];
+        if (timesessions.length > maxes[space]) {
+          maxes[space] = timesessions.length;
+        }
+      }
+    }
+    return [times, maxes];
+  },
+
+  getYScale: function(options, height, maxPerSpace) {
+    var that = this;
+
+    // sum of all session maxima
+    var spacerows = 0;
+    Object.keys(maxPerSpace).forEach(function(space) {
+      spacerows += maxPerSpace[space];
+    });
+    var paddingY = options.padding[1];
+    var yScale = d3.scale.linear()
+      .domain([0, spacerows])
+      .range([paddingY, height-paddingY])
+      .clamp(true);
+    return yScale;
+  },
+
+  getYBreaks: function(maxes) {
+    breaks = {};
+    total = 0;
+    for (space in maxes) {
+      breaks[space] = total;
+      total += maxes[space];
+    }
+    return breaks;
+  },
+
+  getY: function(station, times, breaks) {
+    var that = this,
+      datetime = station.datetime,
+      space = station.space;
+    var spacestart = breaks[space];
+    var spaceindex = times[space][datetime].indexOf(station);
+    return spacestart + spaceindex;
+  },
+
+  drawXAxis: function(stations, svg, options, height, width) {
     var that = this,
       paddingY = options.padding[1];
 
     var xAxis = d3.svg.axis()
        .orient("bottom")
-       .scale(that.getXScale(options, width));
+       .scale(that.getXScale(stations, options, width));
 
     // draw x axis with labels and move to the bottom of the chart area
     svg.append("g")
@@ -296,7 +357,7 @@ app.views.TransitAddView = Backbone.View.extend({
     });
   },
 
-  drawMap: function(lines, legend, width, height, options){
+  drawMap: function(stations, lines, legend, width, height, options){
     var bgColor = options.bgColor,
         svg, points, dots, labels, rects;
 
@@ -331,7 +392,7 @@ app.views.TransitAddView = Backbone.View.extend({
     this.drawDots(svg, dots, options);
     this.drawRects(svg, rects, options);
     this.drawLabels(svg, labels, options);
-    this.drawXAxis(svg, options, height, width);
+    this.drawXAxis(stations, svg, options, height, width);
   },
 
   exportSVG: function(){
@@ -779,19 +840,24 @@ app.views.TransitAddView = Backbone.View.extend({
         // initializers
         lines = [],
         prevLines = [],
-        xScale = that.getXScale(options, width);
-
-    console.log(xScale.invert(2000));
-    console.log(stations[0].datetime.toDate());
+        xScale = that.getXScale(stations, options, width);
 
     // ensure y-unit is 2 or more
     if (yUnit<2) yUnit = 2;
 
+    // setup for y scale
+    var concurrent = that.maxConcurrentSessions(stations);
+    var times = concurrent[0],
+      maxes = concurrent[1],
+      yScale = that.getYScale(options, height, maxes),
+      yBreaks = that.getYBreaks(maxes);
+    console.log(yScale(1));
+
     // loop through stations
     _.each(stations, function(station, i){
-      // TODO: make Y segregate by space (have a region of y for each space)
-      var nextY = paddingY + i * yUnit, // next available yUnit
-          nextX = xScale(station.datetime.toDate()), // random x
+      var yRaw = that.getY(station, times, yBreaks);
+      var nextY = yScale(yRaw),
+          nextX = xScale(station.datetime.format('dddd hh:mm')),
           lineCount = station.pathways.length,
           firstX = nextX;
 
@@ -841,27 +907,8 @@ app.views.TransitAddView = Backbone.View.extend({
 
         // line already exists
         if (foundLine){
-          var transitionPoints = [],
-              lastPoint;
 
-          // retrieve transition points
-          transitionPoints = that.getPointsBetween(prevPoint, newPoint, pathTypes, cornerRadius);
-
-          // add direction2 to previous point
-          if (transitionPoints.length > 0 && foundLine.points.length > 0) {
-            lastPoint = _.last(foundLine.points);
-            lastPoint.direction2 = transitionPoints[0].direction1;
-          }
-
-          // add transition points
-          _.each(transitionPoints, function(tp){
-            tp.className = pointClassName;
-            foundLine.points.push(tp);
-          });
-
-          // update last point with meta data
-          lastPoint = _.last(foundLine.points);
-          lastPoint = _.extend(lastPoint, newPoint);
+          foundLine.points.push(newPoint);
 
         // line does not exist, add a new one
         } else {
