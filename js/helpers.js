@@ -69,7 +69,7 @@
 
     // clean up pathways
     var pathways = session.pathways
-      .split(/(\,| \[youthZone\] )/g) // split joined pathways
+      .split(/(,| \[youthZone\] )/g) // split joined pathways
       .map(function(x) {
         return x
           .replace('[MLN]','') // remove in-pathway labels
@@ -77,10 +77,12 @@
           .replace('[youthZone]','')
           .replace('Pathway - ','')
           .replace('Pathway Craft - ','')
+          .replace(' pathway','')
           .trim(); // handle leading/trailing spaces
       })
       .filter(function(x) {
-        return x.length > 0; // remove empty strings
+        return x.length > 0 // remove empty strings
+         && x != ','; // remove commas
       });
     session.pathways = pathways;
 
@@ -126,12 +128,57 @@
     var times = sessions
       .map(function(s) { return s.datetime; })
       .sort(helper.ascending)
-      .map(function(s) { return s.format('dddd hh:mm'); });
+      .map(function(s) { return s.format('dddd hh:mm A'); });
     return _.uniq(times, true);
   };
 
   helper.ascending = function (l, r)  {
     return (l > r) ? 1 : (l < r) ? -1 : 0;
+  };
+
+  // ordering of spaces based on clustering by
+  // pathway sharing
+  helper.spaceOrder = [
+    "Mozilla Learning Networks",
+    "Youth Zone",
+    "Global Village",
+    "Digital Citizenship",
+    "Journalism",
+    "Localisation",
+    "Diverse Leaders",
+    "Building Participation",
+    "Science"
+   ];
+
+  helper.spacePathwayMatrix = function(sessions) {
+    // make the zero matrix with row and column names
+    var spaces = _.uniq(sessions.map(function(s){ return s.space; }));
+    var nest_pathways = sessions.map(function(s){
+        return s.pathways;
+    });
+    var pathways = _.uniq(
+      _.flatten(nest_pathways)
+    );
+    space2pathway = [];
+    space2pathway[0] = ['space'].concat(pathways);
+    spaces.forEach(function(s) {
+      var rest = Array(pathways.length).fill(0);
+      space2pathway.push([s].concat(rest));
+    });
+
+    sessions.forEach(function(s) {
+      var row = spaces.indexOf(s.space) + 1;
+      s.pathways.forEach(function(p) {
+        var col = pathways.indexOf(p) + 1;
+        space2pathway[row][col] = 1;
+      });
+    });
+
+    csv = "";
+    space2pathway.forEach(function(row) {
+      csv += row.join(',') + "\n";
+    });
+    console.log(csv);
   };
 
 })();

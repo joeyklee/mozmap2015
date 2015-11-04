@@ -13,7 +13,8 @@ app.views.TransitAddView = Backbone.View.extend({
 
     // generate lines with points
     lines = this.makeLines(stations, width, height, options);
-    legend = this.makeLegend(lines, options);
+    // legend = this.makeLegend(lines, options);
+    legend = {};
     endLines = this.makeEndLines(lines, options);
     lines = _.union(lines, endLines);
 
@@ -73,8 +74,8 @@ app.views.TransitAddView = Backbone.View.extend({
         rect.borderColor = borderColor;
         rect.borderWidth = borderWidth;
         rect.borderRadius = borderRadius;
-        rect.width = rect.hubSize*dotSize + offsetWidth*(rect.hubSize-1);
-        rect.height = dotSize;
+        rect.height = rect.hubSize*dotSize + offsetWidth*(rect.hubSize-1);
+        rect.width = dotSize;
         rect.rectX = rect.x - pointRadius;
         rect.rectY = rect.y - pointRadius;
       // legend
@@ -100,9 +101,9 @@ app.views.TransitAddView = Backbone.View.extend({
       label.alignment = "middle";
       // symbol
       if (label.symbol) {
-        label.textColor = "#ffffff";
-        label.fontSize = 14;
-        label.fontWeight = "normal";
+        label.textColor = "#fff6fff";
+        label.fontSize = 1;
+        label.fontWeight = "bold";
         label.anchor = "middle";
         label.text = label.symbol;
         label.labelX = label.labelX!==undefined ? label.labelX : label.x;
@@ -158,7 +159,13 @@ app.views.TransitAddView = Backbone.View.extend({
         }
       }
     }
-    return [times, maxes];
+    var maxes_sorted = {},
+     times_sorted = {};
+    window.helper.spaceOrder.forEach(function(s) {
+      maxes_sorted[s] = maxes[s];
+      times_sorted[s] = times[s];
+    });
+    return [times_sorted, maxes_sorted];
   },
 
   getYScale: function(options, height, maxPerSpace) {
@@ -180,10 +187,13 @@ app.views.TransitAddView = Backbone.View.extend({
   getYBreaks: function(maxes) {
     breaks = {};
     total = 0;
+    i = 1;
+    padding = 2;
     for (space in maxes) {
-      breaks[space] = total;
-      total += maxes[space];
+      breaks[space] = total + padding;
+      total += maxes[space] + padding;
     }
+    i++;
     return breaks;
   },
 
@@ -192,7 +202,7 @@ app.views.TransitAddView = Backbone.View.extend({
       datetime = station.datetime,
       space = station.space;
     var spacestart = breaks[space];
-    var spaceindex = times[space][datetime].indexOf(station);
+    var spaceindex = times[space][datetime].indexOf(station) + 1;
     return spacestart + spaceindex;
   },
 
@@ -214,10 +224,10 @@ app.views.TransitAddView = Backbone.View.extend({
     // solution based on idea here: https://groups.google.com/forum/?fromgroups#!topic/d3-js/heOBPQF3sAY
     // first move the text left so no longer centered on the tick
     // then rotate up to get 45 degrees.
-    svg.selectAll(".xaxis text")  // select all the text elements for the xaxis
-      .attr("transform", function(d) {
-        return "translate(" + height*-2 + "," + height + ")rotate(-45)";
-    });
+    // svg.selectAll(".xaxis text")  // select all the text elements for the xaxis
+    //   .attr("transform", function(d) {
+    //     return "translate(" + height*-2 + "," + height + ")rotate(-45)";
+    // });
   },
 
   addLineStyles: function(lines, options){
@@ -375,19 +385,20 @@ app.views.TransitAddView = Backbone.View.extend({
     rects = _.filter(points, function(p){ return p.hubSize; });
 
     // add legend items
-    lines = _.union(lines, legend.lines);
-    dots = _.union(dots, legend.dots);
-    labels = _.union(labels, legend.labels);
+    // lines = _.union(lines, legend.lines);
+    // dots = _.union(dots, legend.dots);
+    // labels = _.union(labels, legend.labels);
 
     // add styles
     lines = this.addLineStyles(lines, options);
     dots = this.addDotStyles(dots, options);
     labels = this.addLabelStyles(labels, options);
     rects = this.addRectStyles(rects, options);
-    legend.rects = this.addRectStyles(legend.rects, options);
+    // legend.rects = this.addRectStyles(legend.rects, options);
 
     // draw lines, dots, labels, rects
-    this.drawRects(svg, legend.rects);
+    // this.drawRects(svg, legend.rects);
+    this.makeSpaces(svg, stations, options, height, width);
     this.drawLines(svg, lines, options);
     this.drawDots(svg, dots, options);
     this.drawRects(svg, rects, options);
@@ -486,24 +497,24 @@ app.views.TransitAddView = Backbone.View.extend({
         x2 = p2.x, y2 = p2.y,
         yDiff = y2 - y1
         xDiff = x2 - x1,
-        xDirection = false,
+        yDirection = false,
         pathType = false;
 
-    // determine x direction
-    if (xDiff>0) {
-      xDirection = "e";
-    } else if (xDiff<0) {
-      xDirection = "w";
+    // determine y direction
+    if (yDiff > 0) {
+      yDirection = "n";
+    } else if (yDiff < 0) {
+      yDirection = "s";
     }
 
     // filter and choose random path type
     pathTypes = _.filter(pathTypes, function(pt){
-      return pt.xDirection===xDirection;
+      return pt.yDirection===yDirection;
     });
     pathType = _.sample(pathTypes);
 
     // get points if path type exists
-    if (pathType && xDirection) {
+    if (pathType && yDirection) {
 
       // retrieve directions
       var directions = pathType.directions;
@@ -525,15 +536,15 @@ app.views.TransitAddView = Backbone.View.extend({
 
         // add transition points if corner radius
         if (cornerRadius>0 && cornerRadius<length/2) {
-          if (direction=="s") {
+          if (direction=="e") {
+            pointR1 = { x: x+length+cornerRadius, y: y };
+            pointR2 = { x: x+cornerRadius, y: y };
+          } else if (direction=="s") {
             pointR1 = { x: x, y: y-length+cornerRadius };
             pointR2 = { x: x, y: y-cornerRadius };
-          } else if (direction=="e") {
-            pointR1 = { x: x-length+cornerRadius, y: y };
-            pointR2 = { x: x-cornerRadius, y: y };
           } else {
-            pointR1 = { x: x+length-cornerRadius, y: y };
-            pointR2 = { x: x+cornerRadius, y: y };
+            pointR1 = { x: x, y: y+length-cornerRadius };
+            pointR2 = { x: x, y: y+cornerRadius };
           }
         }
 
@@ -558,7 +569,7 @@ app.views.TransitAddView = Backbone.View.extend({
     } else {
       points.push({
         id: _.uniqueId('p'),
-        direction1: 's',
+        direction1: 'e',
         x: x2,
         y: y2
       });
@@ -676,6 +687,26 @@ app.views.TransitAddView = Backbone.View.extend({
     });
 
     return endLines;
+  },
+
+  makeSpaces: function(svg, stations, options, height, width) {
+    var conc = this.maxConcurrentSessions(stations),
+      times = conc[0],
+      maxes = conc[1],
+      ybreaks = this.getYBreaks(maxes),
+      yscale = this.getYScale(options, height, maxes),
+      fill = "#000000";
+
+    for (space in breaks) {
+      var y = breaks[space];
+      svg.append('rect')
+        .attr('x', 0)
+        .attr('y', yscale(y))
+        .attr('height', 5)
+        .attr('width', width)
+        .attr('fill', fill)
+        .attr('fill-opacity', 0.4);
+    }
   },
 
   makeLegend: function(lines, options){
@@ -836,14 +867,10 @@ app.views.TransitAddView = Backbone.View.extend({
         activeH = height - paddingY*2,
         boundaries = {minX: paddingX, minY: paddingY, maxX: width-paddingX, maxY: height-paddingY},
         stationCount = stations.length,
-        yUnit = Math.floor(activeH/stationCount),
         // initializers
         lines = [],
         prevLines = [],
         xScale = that.getXScale(stations, options, width);
-
-    // ensure y-unit is 2 or more
-    if (yUnit<2) yUnit = 2;
 
     // setup for y scale
     var concurrent = that.maxConcurrentSessions(stations);
@@ -851,15 +878,14 @@ app.views.TransitAddView = Backbone.View.extend({
       maxes = concurrent[1],
       yScale = that.getYScale(options, height, maxes),
       yBreaks = that.getYBreaks(maxes);
-    console.log(yScale(1));
 
     // loop through stations
     _.each(stations, function(station, i){
       var yRaw = that.getY(station, times, yBreaks);
       var nextY = yScale(yRaw),
-          nextX = xScale(station.datetime.format('dddd hh:mm')),
+          nextX = xScale(station.datetime.format('dddd hh:mm A')),
           lineCount = station.pathways.length,
-          firstX = nextX;
+          firstY = nextY;
 
       // loop through station's lines
       _.each(station.pathways, function(lineLabel, j){
@@ -875,9 +901,10 @@ app.views.TransitAddView = Backbone.View.extend({
           prevPoint = _.last(foundLine.points);
         }
 
-        // // if line is in previous lines, it will be straight
-        // if (prevLines.indexOf(lineLabel)>=0 && prevPoint) {
-        //   nextX = prevPoint.x;
+        // if line is in previous lines, it will be straight
+        if (prevLines.indexOf(lineLabel)>=0 && prevPoint) {
+          nextY = prevPoint.y;
+        }
 
         // init new point
         newPoint = {
@@ -891,7 +918,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
         // for first line, just add target point
         if (j===0) {
-          firstX = newPoint.x;
+          firstY = newPoint.y;
           newPoint.label = station.title; // only the target point of the first line gets label
           newPoint.className += " primary";
           if (lineCount >= hubSize) {
@@ -901,14 +928,33 @@ app.views.TransitAddView = Backbone.View.extend({
 
         // for additional new lines, place first point next to the first line's target point plus offset
         } else {
-          newPoint.x = firstX + j*offsetWidth;
+          newPoint.y = firstY + j*offsetWidth;
           newPoint.className += " secondary";
         }
 
         // line already exists
         if (foundLine){
+          var transitionPoints = [],
+              lastPoint;
 
-          foundLine.points.push(newPoint);
+          // retrieve transition points
+          transitionPoints = that.getPointsBetween(prevPoint, newPoint, pathTypes, cornerRadius);
+
+          // add direction2 to previous point
+          if (transitionPoints.length > 0 && foundLine.points.length > 0) {
+            lastPoint = _.last(foundLine.points);
+            lastPoint.direction2 = transitionPoints[0].direction1;
+          }
+
+          // add transition points
+          _.each(transitionPoints, function(tp){
+            tp.className = pointClassName;
+            foundLine.points.push(tp);
+          });
+
+          // update last point with meta data
+          lastPoint = _.last(foundLine.points);
+          lastPoint = _.extend(lastPoint, newPoint);
 
         // line does not exist, add a new one
         } else {
@@ -967,14 +1013,14 @@ app.views.TransitAddView = Backbone.View.extend({
     var x_direction = 0, y_direction = 0;
 
     switch(direction){
+      case 'n':
+        y_direction = 1;
+        break;
       case 'e':
         x_direction = 1;
         break;
       case 's':
-        y_direction = 1;
-        break;
-      case 'w':
-        x_direction = -1;
+        y_direction = -1;
         break;
     }
     return {

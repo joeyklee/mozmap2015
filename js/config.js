@@ -8,11 +8,11 @@ var config = {
     "fontFamily": "OpenSans, sans-serif",
     "fontSize": 13,
     "fontWeight": "normal",
-    "maxLines": 32,
+    "maxLines": 80,
     "maxPointsPerLine": 32,
     "minTextLength": 1,
     "maxTextLength": 24,
-    "pathInterpolation": "step-after", // linear, basis, cardinal, monotone
+    "pathInterpolation": "step-before", // linear, basis, cardinal, monotone
     "pointColor": "#ffffff",
     "pointColorInverse": "#444444",
     "borderColor": "#444444",
@@ -34,7 +34,7 @@ var config = {
         "width": 800,
         "padding": 50,
         "bgColor": "#e8ddc2",
-        "columns": 2,
+        "columns": 3,
         "titleFontSize": 32,
         "titleMaxLineChars": 30,
         "titleLineHeight": 40,
@@ -43,17 +43,17 @@ var config = {
         "gridUnit": 20
     },
     "pathTypes": [{
-            "xDirection": "s",
-            "directions": ["s"]
+            "xDirection": "e",
+            "directions": ["e"]
         }, // straight line
         {
-            "xDirection": "e",
-            "directions": ["s", "e", "s"]
-        }, // elbow right
+            "xDirection": "s",
+            "directions": ["e", "s", "e"]
+        }, // elbow down
         {
-            "xDirection": "w",
-            "directions": ["s", "w", "s"]
-        }, // elbow left
+            "xDirection": "n",
+            "directions": ["e", "n", "e"]
+        }, // elbow up
     ]
 };
 

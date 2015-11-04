@@ -40,7 +40,11 @@ app.routers.MainRouter = Backbone.Router.extend({
               && session.space && session.space.length > 0;
           })
           .map(window.helper.mungeSessionData);
+        sessions = _.sortBy(sessions, 'pathway');
         sessions = _.sortBy(sessions, 'datetime');
+
+        // write out the space-pathway matrix for clustering analysis
+        // window.helper.spacePathwayMatrix(sessions);
 
         params = $.extend({}, config, params, { stations: sessions });
         params.title = 'MozFest 2015 Pathways Map';
