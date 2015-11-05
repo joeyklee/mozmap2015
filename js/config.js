@@ -12,19 +12,19 @@ var config = {
     "maxPointsPerLine": 32,
     "minTextLength": 1,
     "maxTextLength": 24,
-    "pathInterpolation": "step-before", // linear, basis, cardinal, monotone
+    "pathInterpolation": "linear", // linear, basis, cardinal, monotone
     "pointColor": "#ffffff",
     "pointColorInverse": "#444444",
     "borderColor": "#444444",
     "borderColorInverse": "#ffffff",
     "borderWidth": 2,
     "borderRadius": 4,
-    "cornerRadius": 40,
+    "cornerRadius": 5,
     "pointRadius": 4,
     "pointRadiusLarge": 10,
     "strokeWidth": 8,
     "strokeOpacity": 0.9,
-    "offsetWidth": 12,
+    "offsetHeight": 50,
     "minXDiff": 5,
     "hubSize": 4,
     "animate": false,
@@ -51,9 +51,17 @@ var config = {
             "directions": ["e", "s", "e"]
         }, // elbow down
         {
+            "xDirection": "s",
+            "directions": ["e", "s", "s", "e"]
+        }, // double elbow down
+        {
             "xDirection": "n",
             "directions": ["e", "n", "e"]
         }, // elbow up
+        {
+            "xDirection": "n",
+            "directions": ["e", "n", "n", "e"]
+        }, // double elbow up
     ]
 };
 

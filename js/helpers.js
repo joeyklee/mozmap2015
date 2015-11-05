@@ -78,6 +78,7 @@
           .replace('Pathway - ','')
           .replace('Pathway Craft - ','')
           .replace(' pathway','')
+          .replace('MLN', '')
           .trim(); // handle leading/trailing spaces
       })
       .filter(function(x) {
