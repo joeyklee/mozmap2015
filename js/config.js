@@ -1,9 +1,9 @@
 var palette = [];
 var config = {
-    "width": 3000,
-    "height": 1600,
+    "width": 1900,
+    "height": 1100,
     "bgColor": "#f2e9b8",
-    "padding": [200, 200],
+    "padding": [50, 50],
     "textColor": "#000000",
     "fontFamily": "OpenSans, sans-serif",
     "fontSize": 13,
@@ -12,7 +12,7 @@ var config = {
     "maxPointsPerLine": 32,
     "minTextLength": 1,
     "maxTextLength": 24,
-    "pathInterpolation": "linear", // linear, basis, cardinal, monotone
+    "pathInterpolation": "bundle", // linear, basis, cardinal, monotone
     "pointColor": "#ffffff",
     "pointColorInverse": "#444444",
     "borderColor": "#444444",
@@ -22,7 +22,7 @@ var config = {
     "cornerRadius": 5,
     "pointRadius": 4,
     "pointRadiusLarge": 10,
-    "strokeWidth": 8,
+    "strokeWidth": 2,
     "strokeOpacity": 0.9,
     "offsetHeight": 50,
     "minXDiff": 5,

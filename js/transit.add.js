@@ -13,7 +13,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
     // generate lines with points
     lines = this.makeLines(stations, width, height, options);
-    // legend = this.makeLegend(lines, options);
+    legend = this.makeLegend(lines, options);
     legend = {};
     // endLines = this.makeEndLines(lines, options);
     // lines = _.union(lines, endLines);
@@ -899,15 +899,20 @@ app.views.TransitAddView = Backbone.View.extend({
     var paths = [];
     pathways.forEach(function(pathway) {
       var these_paths = [[]],
-        lineClassName = helper.parameterize('line-'+pathway) + " primary",
-        pointClassName = helper.parameterize('point-'+pathway);
+        lineClass = helper.parameterize('line-'+pathway) + " primary",
+        pointClass = helper.parameterize('point-'+pathway);
 
-      Object.keys(times_sorted).forEach(function(time) {
+      var first = true,
+        lastmidPoint = false;
+
+      Object.keys(times_sorted).forEach(function(time, i) {
 
         // points are stations at this time in this pathway
         var points = times_sorted[time].filter(function(s) {
           return s.pathways.indexOf(pathway) > -1;
         });
+
+        // do nothing if this pathway has no sessions in this time
         if (points.length == 0) {
           return;
         }
@@ -916,84 +921,83 @@ app.views.TransitAddView = Backbone.View.extend({
 
         // random-ish amount by which to shuffle the x-value
         // where the paths meet
-        var shunt = Math.floor(Math.random() * 10) + 20
+        var shunt = Math.floor(Math.random() * 200) + 20;
         var shuntX = startX + shunt;
 
-        var topY = yScale(that.getY(points[0], times, yBreaks));
-
-        // lone points go in the first path
-        these_paths[0].push({
-          x: startX,
-          y: topY,
-          lineLabel: pathway,
-          pointRadius: pointRadius,
-          className: pointClassName + " station"
-        });
-
-        // and get a line to the east
-        these_paths[0].push({
-          x: shuntX,
-          y: topY,
-          lineLabel: pathway,
-          className: pointClassName
-        });
-
-        // each other point gets its own path
-        points.splice(1).forEach(function(p) {
-          // add the station point
-          var path = [{
-            x: startX,
-            y: yScale(that.getY(p, times, yBreaks)),
-            lineLabel: pathway,
-            pointRadius: pointRadius,
-            className: pointClassName + " station"
-          },
-          { // and the line to the east
-            x: shuntX,
-            y: yScale(that.getY(p, times, yBreaks)),
-            lineLabel: pathway,
-            className: pointClassName
-          }];
-
-          these_paths.push(path);
-        });
-
         // the first and last paths connect back to somewhere between the
-        // top and bottom points (in the middle 60%)
+        // top and bottom points (in the middle 90%)
+        var topY = yScale(that.getY(points[0], times, yBreaks));
         var bottomY = yScale(that.getY(_.last(points), times, yBreaks));
-        var joinregion = Math.floor((bottomY - topY) * 0.6);
+        var joinregion = Math.floor((bottomY - topY) * 0.9);
         var joinspacer = Math.floor(Math.random() * joinregion) + 1;
-        var joinpoint = topY + joinspacer;
+        var joinpointY = topY + joinspacer;
+        var nextmidPoint = that
+          .getPoint(shuntX, joinpointY, pathway, pointClass);
 
-        // make the line bottom -> join
-        _.last(these_paths).push({
-          x: shuntX,
-          y: joinpoint,
-          lineLabel: pathway,
-          className: pointClassName
+        // each point gets its own path
+        points.forEach(function(p, j) {
+
+          var path = [];
+
+          if (i > 0 && j > 0) {
+            // reconnect from the left
+            path.push(JSON.parse(JSON.stringify(lastmidPoint)));
+          }
+
+          var pointY = yScale(that.getY(p, times, yBreaks));
+          // add the station point
+          path.push(
+            that.getPoint(startX, pointY, pathway,
+                          pointClass + " station", pointRadius)
+          );
+
+          if (i == times_sorted.length - 1) {
+            // connect to the right
+            path.push(JSON.parse(JSON.stringify(nextmidPoint)));
+          }
+
+          if (j == 0) {
+            path.forEach(function(p) {
+              these_paths[0].push(p);
+            });
+          } else {
+            these_paths.push(path);
+          }
+
         });
 
-        // make the line top -> join
-        these_paths[0].push({
-          x: shuntX,
-          y: topY,
-          lineLabel: pathway,
-          className: pointClassName
-        });
+        // extend the line straight out
+        var nextmidPoint = that
+          .getPoint(shuntX+100, joinpointY, pathway, pointClass);
+        these_paths[0].push(nextmidPoint);
+
+        // set the last midpoint
+        lastmidPoint = nextmidPoint;
 
       });
 
       these_paths.forEach(function(p) {
         paths.push({
-          className: lineClassName,
+          className: lineClass,
           points: p,
           strokeDash: 'none',
-          color: genColors()[pathways.indexOf(pathway)]
+          color: options.colors[pathways.indexOf(pathway)].hex
         });
-      })
+      });
+
     });
 
     return paths;
+  },
+
+  getPoint: function(x, y, line, pointClass, radius) {
+    return {
+      x: x,
+      y: y,
+      lineLabel: line,
+      className: pointClass,
+      pointRadius: radius
+    };
   },
 
   makeLines: function(stations, width, height, options){
