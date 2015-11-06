@@ -149,17 +149,21 @@
     "Diverse Leaders",
     "Building Participation",
     "Science"
-   ];
+  ];
+
+  helper.getPathways = function(sessions) {
+    var nest_pathways = sessions.map(function(s){
+        return s.pathways;
+    });
+    return pathways = _.uniq(
+      _.flatten(nest_pathways)
+    );
+  }
 
   helper.spacePathwayMatrix = function(sessions) {
     // make the zero matrix with row and column names
     var spaces = _.uniq(sessions.map(function(s){ return s.space; }));
-    var nest_pathways = sessions.map(function(s){
-        return s.pathways;
-    });
-    var pathways = _.uniq(
-      _.flatten(nest_pathways)
-    );
+    var pathways = helper.getPathways(sessions);
     space2pathway = [];
     space2pathway[0] = ['space'].concat(pathways);
     spaces.forEach(function(s) {

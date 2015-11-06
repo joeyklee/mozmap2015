@@ -15,8 +15,9 @@ app.views.TransitAddView = Backbone.View.extend({
     lines = this.makeLines(stations, width, height, options);
     // legend = this.makeLegend(lines, options);
     legend = {};
-    endLines = this.makeEndLines(lines, options);
-    lines = _.union(lines, endLines);
+    // endLines = this.makeEndLines(lines, options);
+    // lines = _.union(lines, endLines);
+    // lines = _.flatten(_.values(lines));
 
     // draw the svg map
     this.drawMap(stations, lines, legend, width, height, options);
@@ -26,7 +27,7 @@ app.views.TransitAddView = Backbone.View.extend({
     }
 
     // activate pan-zoom
-    this.panZoom($("#map-svg"));
+    // this.panZoom($("map-svg"));
 
     // add listeners
     this.addListeners();
@@ -138,13 +139,14 @@ app.views.TransitAddView = Backbone.View.extend({
     // group sessions by space and time
     var times = {};
     sessions.forEach(function(s) {
+      var timekey = s.datetime.format('dddd hh:mm A');
       if (!times[s.space]) {
         times[s.space] = {};
       }
-      if (!times[s.space][s.datetime]) {
-        times[s.space][s.datetime] = [];
+      if (!times[s.space][timekey]) {
+        times[s.space][timekey] = [];
       } else {
-        times[s.space][s.datetime].push(s);
+        times[s.space][timekey].push(s);
       }
     });
     // count maximum concurrent sessions in each space
@@ -199,7 +201,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
   getY: function(station, times, breaks) {
     var that = this,
-      datetime = station.datetime,
+      datetime = station.datetime.format('dddd hh:mm A'),
       space = station.space;
     var spacestart = breaks[space];
     var spaceindex = times[space][datetime].indexOf(station) + 2;
@@ -379,7 +381,7 @@ app.views.TransitAddView = Backbone.View.extend({
       .attr("height", height);
 
     // extract points, dots, labels from lines
-    points = _.flatten( _.pluck(lines, "points") );
+    // points = _.flatten( _.pluck(lines, "points") );
     dots = _.filter(points, function(p){ return p.pointRadius && p.pointRadius > 0; });
     labels = _.filter(points, function(p){ return p.label !== undefined || p.symbol !== undefined; });
     rects = _.filter(points, function(p){ return p.hubSize; });
@@ -511,7 +513,6 @@ app.views.TransitAddView = Backbone.View.extend({
     pathTypes = _.filter(pathTypes, function(pt){
       return pt.yDirection===yDirection;
     });
-    console.log(pathTypes);
     pathType = _.sample(pathTypes);
 
     // get points if path type exists
@@ -629,16 +630,16 @@ app.views.TransitAddView = Backbone.View.extend({
         endLines = [],
         xHash = {};
 
-    _.each(lines, function(line, i){
-      var firstPoint = line.points[0],
-          lastPoint = line.points[line.points.length-1],
-          lineClassName = helper.parameterize('line-'+line.label) + ' end-line',
-          pointClassName = helper.parameterize('point-'+line.label) + ' end-line',
-          lineStart = { className: lineClassName + ' start-line', type: 'symbol', points: [] },
-          lineEnd = { className: lineClassName, type: 'symbol', points: [] },
-
-          fpId = 'p'+firstPoint.y,
-          lpId = 'p'+lastPoint.y;
+    _.each(Object.keys(lines), function(pathway, i){
+      var line = lines[pathway][0],
+        firstPoint = line.points[0],
+        lastPoint = line.points[line.points.length-1],
+        lineClassName = helper.parameterize('line-'+line.label) + ' end-line',
+        pointClassName = helper.parameterize('point-'+line.label) + ' end-line',
+        lineStart = { className: lineClassName + ' start-line', type: 'symbol', points: [] },
+        lineEnd = { className: lineClassName, type: 'symbol', points: [] },
+        fpId = 'p'+firstPoint.y,
+        lpId = 'p'+lastPoint.y;
 
       // keep track of existing x points
       if (xHash[fpId]!==undefined) {
@@ -853,6 +854,148 @@ app.views.TransitAddView = Backbone.View.extend({
 
   },
 
+  getPathData: function(stations, times, xScale, yScale, yBreaks, options) {
+
+    var that = this,
+      pathways = window.helper.getPathways(stations),
+      offsetHeight = options.offsetHeight,
+      cornerRadius = options.cornerRadius,
+      minXDiff = options.minXDiff,
+      pointRadius = options.pointRadius,
+      hubSize = options.hubSize;
+
+    // reorganise times so they aren't grouped by space,
+    // and are sorted by time
+    var times_unsorted = false;
+    Object.keys(times).forEach(function(space) {
+      var spacetimes = times[space];
+      if (!times_unsorted) {
+        times_unsorted = spacetimes;
+      } else {
+        Object.keys(spacetimes).forEach(function(time) {
+          if (!times_unsorted[time]) {
+            times_unsorted[time] = spacetimes[time];
+          } else {
+            times_unsorted[time] = times_unsorted[time].concat(spacetimes[time]);
+          }
+        });
+      }
+    });
+    var times_sorted = {};
+    Object.keys(times_unsorted).sort().forEach(function(time) {
+      times_sorted[time] = times_unsorted[time];
+    });
+
+
+    // generate the intermediate point data for each pathway.
+    // for each pathway, at each time interval...
+    // find all the points for that pathway...
+    // if this is the first timepoint for that pathway,
+    // draw a line to the east a set distance from each point...
+    // for the first and last point at that timepoint, continue the
+    // line north/south to the cetner point between the highest
+    // and lowest. For the last point, continue the path to the east
+    // to a set point before the next time interval
+    var paths = [];
+    pathways.forEach(function(pathway) {
+      var these_paths = [[]],
+        lineClassName = helper.parameterize('line-'+pathway) + " primary",
+        pointClassName = helper.parameterize('point-'+pathway);
+
+      Object.keys(times_sorted).forEach(function(time) {
+
+        // points are stations at this time in this pathway
+        var points = times_sorted[time].filter(function(s) {
+          return s.pathways.indexOf(pathway) > -1;
+        });
+        if (points.length == 0) {
+          return;
+        }
+
+        var startX = xScale(points[0].datetime.format('dddd hh:mm A'));
+
+        // random-ish amount by which to shuffle the x-value
+        // where the paths meet
+        var shunt = Math.floor(Math.random() * 10) + 20
+        var shuntX = startX + shunt;
+
+        var topY = yScale(that.getY(points[0], times, yBreaks));
+
+        // lone points go in the first path
+        these_paths[0].push({
+          x: startX,
+          y: topY,
+          lineLabel: pathway,
+          pointRadius: pointRadius,
+          className: pointClassName + " station"
+        });
+
+        // and get a line to the east
+        these_paths[0].push({
+          x: shuntX,
+          y: topY,
+          lineLabel: pathway,
+          className: pointClassName
+        });
+
+        // each other point gets its own path
+        points.splice(1).forEach(function(p) {
+          // add the station point
+          var path = [{
+            x: startX,
+            y: yScale(that.getY(p, times, yBreaks)),
+            lineLabel: pathway,
+            pointRadius: pointRadius,
+            className: pointClassName + " station"
+          },
+          { // and the line to the east
+            x: shuntX,
+            y: yScale(that.getY(p, times, yBreaks)),
+            lineLabel: pathway,
+            className: pointClassName
+          }];
+
+          these_paths.push(path);
+        });
+
+        // the first and last paths connect back to somewhere between the
+        // top and bottom points (in the middle 60%)
+        var bottomY = yScale(that.getY(_.last(points), times, yBreaks));
+        var joinregion = Math.floor((bottomY - topY) * 0.6);
+        var joinspacer = Math.floor(Math.random() * joinregion) + 1;
+        var joinpoint = topY + joinspacer;
+
+        // make the line bottom -> join
+        _.last(these_paths).push({
+          x: shuntX,
+          y: joinpoint,
+          lineLabel: pathway,
+          className: pointClassName
+        });
+
+        // make the line top -> join
+        these_paths[0].push({
+          x: shuntX,
+          y: topY,
+          lineLabel: pathway,
+          className: pointClassName
+        });
+
+      });
+
+      these_paths.forEach(function(p) {
+        paths.push({
+          className: lineClassName,
+          points: p,
+          strokeDash: 'none',
+          color: genColors()[pathways.indexOf(pathway)]
+        });
+      })
+    });
+
+    return paths;
+  },
+
   makeLines: function(stations, width, height, options){
     var that = this,
         // options
@@ -882,115 +1025,8 @@ app.views.TransitAddView = Backbone.View.extend({
       yScale = that.getYScale(options, height, maxes),
       yBreaks = that.getYBreaks(maxes);
 
-    var xys = [];
-
-    // loop through stations
-    _.each(stations, function(station, i){
-      var yRaw = that.getY(station, times, yBreaks);
-      var nextY = yScale(yRaw),
-          nextX = xScale(station.datetime.format('dddd hh:mm A')),
-          lineCount = station.pathways.length,
-          firstY = nextY;
-
-      xys.push([nextX, nextY]);
-
-      // loop through station's lines
-      _.each(station.pathways, function(lineLabel, j){
-        // if line already exists
-        var foundLine = _.findWhere(lines, {label: lineLabel}),
-            prevPoint = false,
-            lineClassName = helper.parameterize('line-'+lineLabel) + " primary",
-            pointClassName = helper.parameterize('point-'+lineLabel),
-            newPoint;
-
-        // retieve previous point
-        if (foundLine) {
-          prevPoint = _.last(foundLine.points);
-        }
-
-        // // if line is in previous lines, it will be straight
-        // if (prevLines.indexOf(lineLabel)>=0 && prevPoint) {
-        //   nextY = prevPoint.y;
-        // }
-
-        // init new point
-        newPoint = {
-          id: _.uniqueId('p'),
-          x: nextX,
-          y: nextY,
-          lineLabel: lineLabel,
-          pointRadius: pointRadius,
-          className: pointClassName + " station"
-        };
-
-        // for first line, just add target point
-        if (j===0) {
-          firstY = newPoint.y;
-          newPoint.label = station.title; // only the target point of the first line gets label
-          newPoint.className += " primary";
-          if (lineCount >= hubSize) {
-            newPoint.hubSize = lineCount;
-            newPoint.className += " hub";
-          }
-
-        // for additional new lines, place first point next to the first line's target point plus offset
-        } else {
-          newPoint.y = firstY + j*offsetHeight;
-          newPoint.className += " secondary";
-        }
-
-        // line already exists
-        if (foundLine){
-          var transitionPoints = [],
-              lastPoint;
-
-          // retrieve transition points
-          transitionPoints = that.getPointsBetween(prevPoint, newPoint, pathTypes, cornerRadius);
-
-          // add direction2 to previous point
-          if (transitionPoints.length > 0 && foundLine.points.length > 0) {
-            lastPoint = _.last(foundLine.points);
-            lastPoint.direction2 = transitionPoints[0].direction1;
-          }
-
-          // add transition points
-          _.each(transitionPoints, function(tp){
-            tp.className = pointClassName;
-            foundLine.points.push(tp);
-          });
-
-          // update last point with meta data
-          lastPoint = _.last(foundLine.points);
-          lastPoint = _.extend(lastPoint, newPoint);
-
-        // line does not exist, add a new one
-        } else {
-          var color = that.getColor(lines, colors),
-              newLine = {
-                label: lineLabel,
-                color: color.hex,
-                symbol: that.getSymbol(lineLabel, lines),
-                className: lineClassName,
-                points: []
-              };
-          // add point to line, add line to lines
-          newLine.points.push(newPoint);
-          lines.push(newLine);
-        }
-
-      });
-
-      prevLines = station.pathways;
-    });
-
-  var xycounts = _.chain(xys)
-    .countBy()
-    .pairs()
-    .sortBy(1).reverse()
-    .value();
-  console.log(xycounts);
-
-    return lines;
+    return that.getPathData(stations, times, xScale,
+                            yScale, yBreaks, options);
   },
 
   panZoom: function($selector){
