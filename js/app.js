@@ -49,6 +49,7 @@ app.routers.MainRouter = Backbone.Router.extend({
         params = $.extend({}, config, params, { stations: sessions });
         params.title = 'MozFest 2015 Pathways Map';
         app.views.main = new app.views.TransitAddView(params);
+        $('body').height(params.height).width(params.width);
      }
    );
   },

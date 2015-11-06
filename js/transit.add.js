@@ -32,11 +32,15 @@ app.views.TransitAddView = Backbone.View.extend({
     // add listeners
     this.addListeners();
 
-    // tuncate labels
+    // truncate labels
     this.truncateLabels();
+
+    // setup mouseover
+    this.setupMouseover(options);
   },
 
   addDotStyles: function(dots, options){
+
     var pointColor = options.pointColor,
         borderColor = options.borderColor,
         borderWidth = options.borderWidth;
@@ -59,7 +63,7 @@ app.views.TransitAddView = Backbone.View.extend({
   },
 
   addRectStyles: function(rects, options){
-    var pointColor = options.pointColor,
+    var pointColor = options.pointColorInverse,
         borderColor = options.borderColor,
         borderWidth = options.borderWidth,
         borderRadius = options.borderRadius,
@@ -75,15 +79,18 @@ app.views.TransitAddView = Backbone.View.extend({
         rect.borderColor = borderColor;
         rect.borderWidth = borderWidth;
         rect.borderRadius = borderRadius;
-        rect.height = rect.hubSize*dotSize + offsetHeight*(rect.hubSize-1);
-        rect.width = dotSize;
-        rect.rectX = rect.x - pointRadius;
-        rect.rectY = rect.y - pointRadius;
+        rect.height = rect.hubSize*dotSize + offsetHeight*(rect.hubSize);
+        rect.width = dotSize + 8;
+        rect.rectX = rect.x - pointRadius - 4;
+        rect.rectY = rect.y - pointRadius - 1;
       // legend
       } else if (rect.type=="legend") {
         rect.borderColor = borderColor;
         rect.borderWidth = borderWidth;
         rect.borderRadius = 0;
+      }
+      if (rect.mid) {
+        rect.pointColor = 'grey';
       }
     });
 
@@ -126,11 +133,13 @@ app.views.TransitAddView = Backbone.View.extend({
 
   getXScale: function(stations, options, width) {
     var paddingX = options.padding[0];
-    var times = helper.getDateTimes(stations);
+    var times = helper.getDateTimes(stations).sort();
 
     var xScale = d3.scale.ordinal()
       .domain(times)
       .rangePoints([paddingX, width - paddingX]);
+
+    options.xSpacers = (xScale(times[1]) - xScale(times[0])) / 3;
 
     return xScale;
   },
@@ -139,7 +148,7 @@ app.views.TransitAddView = Backbone.View.extend({
     // group sessions by space and time
     var times = {};
     sessions.forEach(function(s) {
-      var timekey = s.datetime.format('dddd hh:mm A');
+      var timekey = s.datetime.unix();
       if (!times[s.space]) {
         times[s.space] = {};
       }
@@ -180,9 +189,8 @@ app.views.TransitAddView = Backbone.View.extend({
     });
     var paddingY = options.padding[1];
     var yScale = d3.scale.linear()
-      .domain([0, spacerows])
-      .range([paddingY, height-paddingY])
-      .clamp(true);
+      .domain([0, spacerows + 15])
+      .rangeRound([paddingY, height-paddingY]);
     return yScale;
   },
 
@@ -192,8 +200,10 @@ app.views.TransitAddView = Backbone.View.extend({
     i = 1;
     padding = 2;
     for (space in maxes) {
-      breaks[space] = total + padding;
-      total += maxes[space] + padding;
+      if (maxes[space] > 0) {
+        breaks[space] = total + padding;
+        total += maxes[space] + padding;
+      }
     }
     i++;
     return breaks;
@@ -201,7 +211,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
   getY: function(station, times, breaks) {
     var that = this,
-      datetime = station.datetime.format('dddd hh:mm A'),
+      datetime = station.datetime.unix(),
       space = station.space;
     var spacestart = breaks[space];
     var spaceindex = times[space][datetime].indexOf(station) + 2;
@@ -374,14 +384,18 @@ app.views.TransitAddView = Backbone.View.extend({
         svg, points, dots, labels, rects;
 
     // init svg and add to DOM
+    $("body").height(height).width(width);
+
     svg = d3.select("#svg-wrapper")
+      .attr("width", width)
+      .attr("height", height)
       .append("svg")
       .attr("id", "map-svg")
       .attr("width", width)
       .attr("height", height);
 
     // extract points, dots, labels from lines
-    // points = _.flatten( _.pluck(lines, "points") );
+    points = _.flatten( _.pluck(lines, "points") );
     dots = _.filter(points, function(p){ return p.pointRadius && p.pointRadius > 0; });
     labels = _.filter(points, function(p){ return p.label !== undefined || p.symbol !== undefined; });
     rects = _.filter(points, function(p){ return p.hubSize; });
@@ -393,7 +407,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
     // add styles
     lines = this.addLineStyles(lines, options);
-    dots = this.addDotStyles(dots, options);
+    // dots = this.addDotStyles(dots, options);
     labels = this.addLabelStyles(labels, options);
     rects = this.addRectStyles(rects, options);
     // legend.rects = this.addRectStyles(legend.rects, options);
@@ -402,8 +416,8 @@ app.views.TransitAddView = Backbone.View.extend({
     // this.drawRects(svg, legend.rects);
     this.makeSpaces(svg, stations, options, height, width);
     this.drawLines(svg, lines, options);
-    this.drawDots(svg, dots, options);
     this.drawRects(svg, rects, options);
+    // this.drawDots(svg, dots, options);
     this.drawLabels(svg, labels, options);
     this.drawXAxis(stations, svg, options, height, width);
   },
@@ -490,94 +504,6 @@ app.views.TransitAddView = Backbone.View.extend({
     } while(prevPoint && xDiff<minXDiff); // ensure xDiff is above min
 
     return x;
-  },
-
-  getPointsBetween: function(p1, p2, pathTypes, cornerRadius) {
-    var that = this,
-        points = [],
-        x1 = p1.x, y1 = p1.y,
-        x2 = p2.x, y2 = p2.y,
-        yDiff = y2 - y1
-        xDiff = x2 - x1,
-        yDirection = false,
-        pathType = false;
-
-    // determine y direction
-    if (yDiff > 0) {
-      yDirection = "n";
-    } else if (yDiff < 0) {
-      yDirection = "s";
-    }
-
-    // filter and choose random path type
-    pathTypes = _.filter(pathTypes, function(pt){
-      return pt.yDirection===yDirection;
-    });
-    pathType = _.sample(pathTypes);
-
-    // get points if path type exists
-    if (pathType && yDirection) {
-
-      // retrieve directions
-      var directions = pathType.directions;
-
-      // retrieve lengths
-      var x = x1, y = y1,
-          lengths = that.getLengths(xDiff, yDiff, directions);
-
-      // generate points
-      _.each(directions, function(direction, i){
-        var length = lengths[i],
-            point = that.translateCoordinates(x, y, direction, length),
-            pointR1 = false, pointR2 = false;
-
-        x = point.x;
-        y = point.y;
-        point.id = _.uniqueId('p');
-        point.direction1 = direction;
-
-        // add transition points if corner radius
-        if (cornerRadius>0 && cornerRadius<length/2) {
-          if (direction=="e") {
-            pointR1 = { x: x+length+cornerRadius, y: y };
-            pointR2 = { x: x+cornerRadius, y: y };
-          } else if (direction=="s") {
-            pointR1 = { x: x, y: y-length+cornerRadius };
-            pointR2 = { x: x, y: y-cornerRadius };
-          } else {
-            pointR1 = { x: x, y: y+length-cornerRadius };
-            pointR2 = { x: x, y: y+cornerRadius };
-          }
-        }
-
-        // add points
-        if (pointR1) points.push(pointR1);
-        if (pointR2) points.push(pointR2);
-        points.push(point);
-
-        // add direction out
-        if (i>0) {
-          points[i-1].direction2 = direction;
-        }
-      });
-
-      // ensure the last point matches target
-      if (points.length > 0) {
-        points[points.length-1].x = x2;
-        points[points.length-1].y = y2;
-      }
-
-    // otherwise, just return target point
-    } else {
-      points.push({
-        id: _.uniqueId('p'),
-        direction1: 'e',
-        x: x2,
-        y: y2
-      });
-    }
-
-    return points;
   },
 
   getSymbol: function(lineLabel, lines) {
@@ -698,7 +624,7 @@ app.views.TransitAddView = Backbone.View.extend({
       times = conc[0],
       maxes = conc[1],
       ybreaks = this.getYBreaks(maxes),
-      yscale = this.getYScale(options, height, maxes),
+      yscale = this.getYScale(options, (height - options.padding[1]*2), maxes),
       fill = "#000000";
 
     for (space in breaks) {
@@ -862,7 +788,8 @@ app.views.TransitAddView = Backbone.View.extend({
       cornerRadius = options.cornerRadius,
       minXDiff = options.minXDiff,
       pointRadius = options.pointRadius,
-      hubSize = options.hubSize;
+      hubSize = options.hubSize,
+      xSpacer = options.xSpacer;
 
     // reorganise times so they aren't grouped by space,
     // and are sorted by time
@@ -885,7 +812,7 @@ app.views.TransitAddView = Backbone.View.extend({
     Object.keys(times_unsorted).sort().forEach(function(time) {
       times_sorted[time] = times_unsorted[time];
     });
-
+    var ntimes = Object.keys(times_sorted).length;
 
     // generate the intermediate point data for each pathway.
     // for each pathway, at each time interval...
@@ -897,7 +824,7 @@ app.views.TransitAddView = Backbone.View.extend({
     // and lowest. For the last point, continue the path to the east
     // to a set point before the next time interval
     var paths = [];
-    pathways.forEach(function(pathway) {
+    pathways.forEach(function(pathway, pi) {
       var these_paths = [[]],
         lineClass = helper.parameterize('line-'+pathway) + " primary",
         pointClass = helper.parameterize('point-'+pathway);
@@ -917,42 +844,58 @@ app.views.TransitAddView = Backbone.View.extend({
           return;
         }
 
-        var startX = xScale(points[0].datetime.format('dddd hh:mm A'));
+        var startX = xScale(points[0].datetime.unix());
 
         // random-ish amount by which to shuffle the x-value
         // where the paths meet
-        var shunt = Math.floor(Math.random() * 200) + 20;
+        var shunt = xSpacer;
         var shuntX = startX + shunt;
 
-        // the first and last paths connect back to somewhere between the
-        // top and bottom points (in the middle 90%)
+        // all paths connect to a point halfway between top and bottom
         var topY = yScale(that.getY(points[0], times, yBreaks));
         var bottomY = yScale(that.getY(_.last(points), times, yBreaks));
-        var joinregion = Math.floor((bottomY - topY) * 0.9);
-        var joinspacer = Math.floor(Math.random() * joinregion) + 1;
+        var joinspacer = Math.floor((bottomY - topY) * 0.5);
         var joinpointY = topY + joinspacer;
         var nextmidPoint = that
-          .getPoint(shuntX, joinpointY, pathway, pointClass);
+          .getPoint(shuntX, joinpointY, pathway, pointClass + 'mid', 0);
 
         // each point gets its own path
         points.forEach(function(p, j) {
 
           var path = [];
 
-          if (i > 0 && j > 0) {
+          if (i > 0 && j > 0 && lastmidPoint) {
             // reconnect from the left
-            path.push(JSON.parse(JSON.stringify(lastmidPoint)));
+            path.push(JSON.parse(lastmidPoint));
           }
 
           var pointY = yScale(that.getY(p, times, yBreaks));
-          // add the station point
-          path.push(
-            that.getPoint(startX, pointY, pathway,
-                          pointClass + " station", pointRadius)
-          );
+          pointY += options.offsetHeight * (p.pathways.indexOf(pathway) + 1);
 
-          if (i == times_sorted.length - 1) {
-            // connect to the right
+          // add the station point and one either side
+          // to the left
+          if (i > 0) {
+            var prepoint =
+              that.getPoint(startX - 30, pointY, pathway,
+                            pointClass, 0);
+            path.push(prepoint);
+          }
+          // station
+          var stationPoint =
+            that.getPoint(startX, pointY, pathway,
+                          pointClass + " station", pointRadius);
+          if (p.pathways.indexOf(pathway) == 0) {
+            stationPoint.hubSize = p.pathways.length;
+          }
+          path.push(stationPoint);
+          // to the right
+          var postpoint =
+            that.getPoint(startX + 30, pointY, pathway,
+                          pointClass, 0);
+          path.push(postpoint);
+
+          // connect to the right
+          if (i < times_sorted.length - 1) {
             path.push(JSON.parse(JSON.stringify(nextmidPoint)));
           }
 
@@ -966,13 +909,37 @@ app.views.TransitAddView = Backbone.View.extend({
 
         });
 
-        // extend the line straight out
-        var nextmidPoint = that
-          .getPoint(shuntX+100, joinpointY, pathway, pointClass);
-        these_paths[0].push(nextmidPoint);
+        // the next midpoint is halfway between the top and bottom of
+        // the points in the next time
+        // all paths connect to a point halfway between top and bottom
+        // so, load the next points (if any)
+        // if (i == (Object.keys(times_sorted).length - 1)) {
+        //   return;
+        // }
+        // return;
+        var npoints = [];
+        var ni = i;
+        while (npoints.length == 0 && ni < (ntimes - 1)) {
+          var nextTime = Object.keys(times_sorted)[ni+1];
+          npoints = times_sorted[nextTime].filter(function(s) {
+            return s.pathways.indexOf(pathway) > -1;
+          });
+          ni += 1;
+        }
+        if (npoints.length == 0) {
+          return;
+        }
 
-        // set the last midpoint
-        lastmidPoint = nextmidPoint;
+        // get the next midpoint
+        var ntopY = yScale(that.getY(npoints[0], times, yBreaks));
+        var nbottomY = yScale(that.getY(_.last(npoints), times, yBreaks));
+        var njoinspacer = (nbottomY - ntopY) * 0.3;
+        var njoinpointY = ntopY + njoinspacer + (pi * 5);
+        nextmidPoint = that
+          .getPoint(shuntX+shunt, njoinpointY, pathway, pointClass, 0);
+        // extend the canonical line
+        these_paths[0].push(nextmidPoint);
+        lastmidPoint = JSON.stringify(nextmidPoint);
 
       });
 
@@ -985,7 +952,7 @@ app.views.TransitAddView = Backbone.View.extend({
         });
       });
 
-    });
+    }); // forEach pathways
 
     return paths;
   },
@@ -1026,28 +993,11 @@ app.views.TransitAddView = Backbone.View.extend({
     var concurrent = that.maxConcurrentSessions(stations);
     var times = concurrent[0],
       maxes = concurrent[1],
-      yScale = that.getYScale(options, height, maxes),
+      yScale = that.getYScale(options, activeH, maxes),
       yBreaks = that.getYBreaks(maxes);
 
     return that.getPathData(stations, times, xScale,
                             yScale, yBreaks, options);
-  },
-
-  panZoom: function($selector){
-    var $panzoom = $selector.panzoom({
-      $zoomIn: $('.svg-zoom-in'),
-      $zoomOut: $('.svg-zoom-out')
-    });
-    $panzoom.parent().on('mousewheel.focal', function( e ) {
-      e.preventDefault();
-      var delta = e.delta || e.originalEvent.wheelDelta;
-      var zoomOut = delta ? delta < 0 : e.originalEvent.deltaY > 0;
-      $panzoom.panzoom('zoom', zoomOut, {
-        increment: 0.1,
-        animate: false,
-        focal: e
-      });
-    });
   },
 
   processStations: function(stations){
@@ -1063,24 +1013,25 @@ app.views.TransitAddView = Backbone.View.extend({
     return stations;
   },
 
-  translateCoordinates: function(x, y, direction, length){
-    var x_direction = 0, y_direction = 0;
+  setupMouseover: function(options) {
 
-    switch(direction){
-      case 'n':
-        y_direction = 1;
-        break;
-      case 'e':
-        x_direction = 1;
-        break;
-      case 's':
-        y_direction = -1;
-        break;
-    }
-    return {
-      x: x,
-      y: y + length * y_direction
-    };
+    var normal = options.strokeWidth,
+      thick = options.strokeSelectedWidth;
+
+    d3.select("#svg-wrapper").selectAll('path')
+      .on('mouseover', function(d) {
+        console.log($(this).attr('class').split(' ')[0]);
+        d3.select("." + $(this).attr('class').split(' ')[0])
+        .transition()
+        .duration(50)
+        .style('stroke-width', thick);
+      })
+      .on('mouseout', function(d) {
+        d3.select("." + $(this).attr('class').split(' ')[0])
+          .transition()
+          .duration(50)
+          .style('stroke-width', normal);
+       });
   }
 
 });

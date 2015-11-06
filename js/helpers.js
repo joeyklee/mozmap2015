@@ -129,7 +129,7 @@
     var times = sessions
       .map(function(s) { return s.datetime; })
       .sort(helper.ascending)
-      .map(function(s) { return s.format('dddd hh:mm A'); });
+      .map(function(s) { return s.unix(); });
     return _.uniq(times, true);
   };
 
