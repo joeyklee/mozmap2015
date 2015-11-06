@@ -15,9 +15,9 @@ app.views.TransitAddView = Backbone.View.extend({
     lines = this.makeLines(stations, width, height, options);
     legend = this.makeLegend(lines, options);
     legend = {};
-    // endLines = this.makeEndLines(lines, options);
-    // lines = _.union(lines, endLines);
-    // lines = _.flatten(_.values(lines));
+    endLines = this.makeEndLines(lines, options);
+    lines = _.union(lines, endLines);
+    lines = _.flatten(_.values(lines));
 
     // draw the svg map
     this.drawMap(stations, lines, legend, width, height, options);
@@ -106,7 +106,7 @@ app.views.TransitAddView = Backbone.View.extend({
     _.each(labels, function(label){
       label.className = label.className || '';
       label.fontFamily = fontFamily;
-      label.alignment = "middle";
+      label.alignment = "left";
       // symbol
       if (label.symbol) {
         label.textColor = "#fff6fff";
@@ -121,7 +121,7 @@ app.views.TransitAddView = Backbone.View.extend({
         label.textColor = textColor;
         label.fontSize = label.fontSize || fontSize;
         label.fontWeight = fontWeight;
-        label.anchor = label.anchor || "end";
+        label.anchor = label.anchor || "middle";
         label.text = label.text || label.label;
         label.labelX = label.labelX!==undefined ? label.labelX : label.x;
         label.labelY = label.labelY!==undefined ? label.labelY : label.y-10;
@@ -139,7 +139,7 @@ app.views.TransitAddView = Backbone.View.extend({
       .domain(times)
       .rangePoints([paddingX, width - paddingX]);
 
-    options.xSpacers = (xScale(times[1]) - xScale(times[0])) / 3;
+    options.xSpacer = (xScale(times[1]) - xScale(times[0])) / 3;
 
     return xScale;
   },
@@ -407,7 +407,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
     // add styles
     lines = this.addLineStyles(lines, options);
-    // dots = this.addDotStyles(dots, options);
+    dots = this.addDotStyles(dots, options);
     labels = this.addLabelStyles(labels, options);
     rects = this.addRectStyles(rects, options);
     // legend.rects = this.addRectStyles(legend.rects, options);
@@ -417,7 +417,7 @@ app.views.TransitAddView = Backbone.View.extend({
     this.makeSpaces(svg, stations, options, height, width);
     this.drawLines(svg, lines, options);
     this.drawRects(svg, rects, options);
-    // this.drawDots(svg, dots, options);
+    this.drawDots(svg, dots, options);
     this.drawLabels(svg, labels, options);
     this.drawXAxis(stations, svg, options, height, width);
   },
@@ -557,15 +557,19 @@ app.views.TransitAddView = Backbone.View.extend({
         xHash = {};
 
     _.each(Object.keys(lines), function(pathway, i){
-      var line = lines[pathway][0],
-        firstPoint = line.points[0],
-        lastPoint = line.points[line.points.length-1],
+      var line = lines[pathway],
+        firstPoint = _.first(line.points),
+        lastPoint = _.last(line.points),
         lineClassName = helper.parameterize('line-'+line.label) + ' end-line',
         pointClassName = helper.parameterize('point-'+line.label) + ' end-line',
         lineStart = { className: lineClassName + ' start-line', type: 'symbol', points: [] },
-        lineEnd = { className: lineClassName, type: 'symbol', points: [] },
-        fpId = 'p'+firstPoint.y,
-        lpId = 'p'+lastPoint.y;
+        lineEnd = { className: lineClassName, type: 'symbol', points: [] };
+
+        if (firstPoint==undefined) {
+          return;
+        }
+        var fpId = 'p' + firstPoint.y,
+        lpId = 'p' + lastPoint.y;
 
       // keep track of existing x points
       if (xHash[fpId]!==undefined) {
@@ -624,7 +628,7 @@ app.views.TransitAddView = Backbone.View.extend({
       times = conc[0],
       maxes = conc[1],
       ybreaks = this.getYBreaks(maxes),
-      yscale = this.getYScale(options, (height - options.padding[1]*2), maxes),
+      yscale = this.getYScale(options, height, maxes),
       fill = "#000000";
 
     for (space in breaks) {
@@ -789,7 +793,8 @@ app.views.TransitAddView = Backbone.View.extend({
       minXDiff = options.minXDiff,
       pointRadius = options.pointRadius,
       hubSize = options.hubSize,
-      xSpacer = options.xSpacer;
+      xSpacer = options.xSpacer,
+      xStationPad = options.xStationPad;
 
     // reorganise times so they aren't grouped by space,
     // and are sorted by time
@@ -854,10 +859,11 @@ app.views.TransitAddView = Backbone.View.extend({
         // all paths connect to a point halfway between top and bottom
         var topY = yScale(that.getY(points[0], times, yBreaks));
         var bottomY = yScale(that.getY(_.last(points), times, yBreaks));
-        var joinspacer = Math.floor((bottomY - topY) * 0.5);
-        var joinpointY = topY + joinspacer;
+
+        var joinspacer = points.length > 1 ? (Math.floor((bottomY - topY) * 0.5)) : 0;
+        var joinpointY = topY + joinspacer; // + (pi * 7);
         var nextmidPoint = that
-          .getPoint(shuntX, joinpointY, pathway, pointClass + 'mid', 0);
+          .getPoint(shuntX, joinpointY, pathway, pointClass, 3);
 
         // each point gets its own path
         points.forEach(function(p, j) {
@@ -870,14 +876,14 @@ app.views.TransitAddView = Backbone.View.extend({
           }
 
           var pointY = yScale(that.getY(p, times, yBreaks));
-          pointY += options.offsetHeight * (p.pathways.indexOf(pathway) + 1);
+          pointY += options.offsetHeight * (p.pathways.indexOf(pathway));
 
           // add the station point and one either side
           // to the left
           if (i > 0) {
             var prepoint =
-              that.getPoint(startX - 30, pointY, pathway,
-                            pointClass, 0);
+              that.getPoint(startX - xStationPad, pointY, pathway,
+                            pointClass, 3);
             path.push(prepoint);
           }
           // station
@@ -886,16 +892,17 @@ app.views.TransitAddView = Backbone.View.extend({
                           pointClass + " station", pointRadius);
           if (p.pathways.indexOf(pathway) == 0) {
             stationPoint.hubSize = p.pathways.length;
+            stationPoint.label = p.title;
           }
           path.push(stationPoint);
           // to the right
           var postpoint =
-            that.getPoint(startX + 30, pointY, pathway,
-                          pointClass, 0);
+            that.getPoint(startX + xStationPad, pointY, pathway,
+                          pointClass, 3);
           path.push(postpoint);
 
           // connect to the right
-          if (i < times_sorted.length - 1) {
+          if (i < (ntimes - 1)) {
             path.push(JSON.parse(JSON.stringify(nextmidPoint)));
           }
 
@@ -913,30 +920,30 @@ app.views.TransitAddView = Backbone.View.extend({
         // the points in the next time
         // all paths connect to a point halfway between top and bottom
         // so, load the next points (if any)
-        // if (i == (Object.keys(times_sorted).length - 1)) {
-        //   return;
-        // }
-        // return;
+        if (i == ntimes - 1) {
+          return;
+        }
         var npoints = [];
-        var ni = i;
+        var ni = i+1;
         while (npoints.length == 0 && ni < (ntimes - 1)) {
-          var nextTime = Object.keys(times_sorted)[ni+1];
+          var nextTime = Object.keys(times_sorted)[ni];
           npoints = times_sorted[nextTime].filter(function(s) {
             return s.pathways.indexOf(pathway) > -1;
           });
           ni += 1;
         }
-        if (npoints.length == 0) {
+        if (npoints.length < 2) {
           return;
         }
 
         // get the next midpoint
         var ntopY = yScale(that.getY(npoints[0], times, yBreaks));
         var nbottomY = yScale(that.getY(_.last(npoints), times, yBreaks));
-        var njoinspacer = (nbottomY - ntopY) * 0.3;
-        var njoinpointY = ntopY + njoinspacer + (pi * 5);
+        var njoinspacer = (nbottomY - ntopY) * 0.5;
+        var njoinpointY = ntopY + njoinspacer;
+        var nxspacer = shuntX+shunt+(3*shunt*((ni-2)-i))
         nextmidPoint = that
-          .getPoint(shuntX+shunt, njoinpointY, pathway, pointClass, 0);
+          .getPoint(nxspacer, njoinpointY, pathway, pointClass, 3);
         // extend the canonical line
         these_paths[0].push(nextmidPoint);
         lastmidPoint = JSON.stringify(nextmidPoint);
@@ -1020,7 +1027,6 @@ app.views.TransitAddView = Backbone.View.extend({
 
     d3.select("#svg-wrapper").selectAll('path')
       .on('mouseover', function(d) {
-        console.log($(this).attr('class').split(' ')[0]);
         d3.select("." + $(this).attr('class').split(' ')[0])
         .transition()
         .duration(50)

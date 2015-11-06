@@ -1,9 +1,9 @@
 var palette = [];
 var config = {
-    "width": 2200,
-    "height": 2000,
+    "width": 3900,
+    "height": 4000,
     "bgColor": "#f2e9b8",
-    "padding": [10, 30],
+    "padding": [80, 30],
     "textColor": "#000000",
     "fontFamily": "OpenSans, sans-serif",
     "fontSize": 13,
@@ -12,8 +12,9 @@ var config = {
     "maxPointsPerLine": 32,
     "minTextLength": 1,
     "maxTextLength": 24,
-    "xSpacer": 60,
-    "pathInterpolation": "monotone", // linear, basis, cardinal, monotone
+    "xSpacer": 50,
+    "xStationPad": 20,
+    "pathInterpolation": "linear", // linear, basis, cardinal, monotone
     "pointColor": "#444444",
     "pointColorInverse": "#ffffff",
     "borderColor": "#444444",
