@@ -131,9 +131,14 @@ app.views.TransitAddView = Backbone.View.extend({
     return labels;
   },
 
-  getXScale: function(stations, options, width) {
+  getXScale: function(stations, options, width, realdates) {
     var paddingX = options.padding[0];
     var times = helper.getDateTimes(stations).sort();
+    if (realdates) {
+      times = times.map(function(d) {
+        return moment.unix(d).format('dddd hh:mm A');
+      });
+    }
 
     var xScale = d3.scale.ordinal()
       .domain(times)
@@ -220,17 +225,40 @@ app.views.TransitAddView = Backbone.View.extend({
 
   drawXAxis: function(stations, svg, options, height, width) {
     var that = this,
-      paddingY = options.padding[1];
+      paddingY = options.padding[1],
+      xscale = that.getXScale(stations, options, width, true);
 
     var xAxis = d3.svg.axis()
        .orient("bottom")
-       .scale(that.getXScale(stations, options, width));
+       .scale(xscale);
 
     // draw x axis with labels and move to the bottom of the chart area
     svg.append("g")
       .attr("class", "xaxis")   // give it a class so it can be used to select only xaxis labels  below
       .attr("transform", "translate(0," + (height - paddingY) + ")")
       .call(xAxis);
+
+    var xAxisTop = d3.svg.axis()
+      .orient("top")
+      .scale(xscale);
+
+      // draw x axis with labels and move to the bottom of the chart area
+      svg.append("g")
+        .attr("class", "xaxis")   // give it a class so it can be used to select only xaxis labels  below
+        .attr("transform", "translate(0," + (paddingY) + ")")
+        .call(xAxisTop);
+
+    var times = helper.getDateTimes(stations).sort().forEach(function(d) {
+      var time = moment.unix(d).format('dddd hh:mm A');
+      var x = xscale(time);
+      svg.append("line")
+        .attr('x1', x)
+        .attr('x2', x)
+        .attr('y1', paddingY)
+        .attr('y2', height-paddingY)
+        .attr('stroke-dasharray', '2, 10')
+        .attr('stroke', '#333333')
+    });
 
     // now rotate text on x axis
     // solution based on idea here: https://groups.google.com/forum/?fromgroups#!topic/d3-js/heOBPQF3sAY
