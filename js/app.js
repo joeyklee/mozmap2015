@@ -32,25 +32,26 @@ app.routers.MainRouter = Backbone.Router.extend({
     params = helper.parseQueryString(params);
     $.getJSON("http://mozilla.github.io/mozfest-schedule-app/sessions.json")
       .done(function(results) {
-        var stations = results.filter(function(session) {
-          return session.pathways.length > 0;
-        }).map(function(session) {
-          var lines = session.pathways
-            .split(',') // split joined pathways
-            .map(function(x) {
-              return x.trim();
-            }) // handle leading/trailing spaces
-            .filter(function(x) {
-              return x.length > 0; // remove empty strings
-            });
-            console.log(lines);
-          return { label: session.title, lines: lines };
-        });
+        var sessions = results
+          .filter(function(session) {
+            return session.pathways.length > 0
+              && session.scheduleblock.length > 0
+              && session.start && session.start.length > 0
+              && session.space && session.space.length > 0;
+          })
+          .map(window.helper.mungeSessionData);
+        sessions = _.sortBy(sessions, 'pathway');
+        sessions = _.sortBy(sessions, 'datetime');
 
-        params = $.extend({}, config, params, { stations: stations });
+        // write out the space-pathway matrix for clustering analysis
+        // window.helper.spacePathwayMatrix(sessions);
+
+        params = $.extend({}, config, params, { stations: sessions });
         params.title = 'MozFest 2015 Pathways Map';
         app.views.main = new app.views.TransitAddView(params);
-      });
+        // $('body').height(params.height).width(params.width);
+     }
+   );
   },
 
   transitEdit: function(id){

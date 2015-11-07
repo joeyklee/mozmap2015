@@ -1,5 +1,7 @@
 # Mozmap2015
 
+http://joeyklee.github.io/mozmap2015/
+
 ## Overview:
 
 This is the repository for a Mozfest 2015 web feature that is aimed to create an even more interactive experience! 
@@ -24,7 +26,9 @@ This is the repository for a Mozfest 2015 web feature that is aimed to create an
 * a little interactive puzzle that prompts people with a list of "items" to photograph throughout the conference - each photograph submitted fits into a puzzle that when completed reveals some image of something really awesome or a location to go party :)
 
 
+## Resources
 
-	
-  
+- [Official Mozfest schedule app](http://mozilla.github.io/mozfest-schedule-app)
+- [Schedule app session data (JSON)](http://mozilla.github.io/mozfest-schedule-app/sessions.json)
+ 
 
