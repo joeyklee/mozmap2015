@@ -323,7 +323,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
   drawDots: function(svg, dots) {
     svg.selectAll("dot")
-      .data(dots)
+      .data(dots.filter(function(d) { return d.pointRadius }))
       .enter().append("circle")
       .attr("r", function(d) { return d.pointRadius; })
       .attr("cx", function(d) { return d.x; })
@@ -939,7 +939,7 @@ app.views.TransitAddView = Backbone.View.extend({
           path.push(postpoint);
 
           // connect to the right
-          if (i < (ntimes - 1)) {
+          if (i < (ntimes - 1) && points.length > 1) {
             path.push(JSON.parse(JSON.stringify(nextmidPoint)));
           }
 
@@ -980,7 +980,7 @@ app.views.TransitAddView = Backbone.View.extend({
         var njoinpointY = ntopY + njoinspacer;
         var nxspacer = shuntX+shunt+(3*shunt*((ni-2)-i))
         nextmidPoint = that
-          .getPoint(nxspacer, njoinpointY, pathway, pointClass, 3);
+          .getPoint(nxspacer, njoinpointY, pathway, pointClass, false);
         // extend the canonical line
         these_paths[0].push(nextmidPoint);
         lastmidPoint = JSON.stringify(nextmidPoint);
