@@ -13,7 +13,7 @@ var config = {
     "minTextLength": 1,
     "maxTextLength": 24,
     "xSpacer": 50,
-    "xStationPad": 20,
+    "xStationPad": 30,
     "pathInterpolation": "linear", // linear, basis, cardinal, monotone
     "pointColor": "#444444",
     "pointColorInverse": "#ffffff",
