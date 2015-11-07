@@ -17,6 +17,11 @@ cd moztweetapp
 meteor add meteorhacks:npm
 ```
 
+
+### install bootstrap:
+```
+meteor add twbs:bootstrap
+```
 ### Install the twitter node package from the "package.json":
 ```
 npm install

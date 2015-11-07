@@ -1,0 +1,1 @@
+Tweet = new Meteor.Collection("scitweet");
