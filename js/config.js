@@ -3,7 +3,7 @@ var config = {
     "width": 3900,
     "height": 4000,
     "bgColor": "#f2e9b8",
-    "padding": [80, 30],
+    "padding": [100, 30],
     "textColor": "#000000",
     "fontFamily": "OpenSans, sans-serif",
     "fontSize": 13,

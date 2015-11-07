@@ -640,6 +640,15 @@ app.views.TransitAddView = Backbone.View.extend({
         .attr('width', width)
         .attr('fill', fill)
         .attr('fill-opacity', 0.4);
+
+      svg.append('text')
+        .attr('x', 20)
+        .attr('y', yscale(y) + 40)
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "30px")
+        .attr("fill", "#444444")
+        .text(space)
+
     }
   },
 
