@@ -2,6 +2,8 @@ app.views.TransitAddView = Backbone.View.extend({
 
   el: 'body',
 
+
+
   initialize: function(options) {
     var stations = options.stations,
         width = options.width,
@@ -1073,7 +1075,7 @@ app.views.TransitAddView = Backbone.View.extend({
         .duration(50)
         .style('stroke-width', thick);
 
-        that.showPathwayInfo(className);
+        that.showPathwayInfo(this, className);
       })
       .on('mouseout', function(d) {
         var className = $(this).attr('class').split(' ')[0];
@@ -1082,16 +1084,31 @@ app.views.TransitAddView = Backbone.View.extend({
           .duration(50)
           .style('stroke-width', normal);
 
-        that.hidePathWayInfo(className);
+        that.hidePathWayInfo(this, className);
       });
   },
 
-  showPathwayInfo: function(className) {
-
+  showPathwayInfo: function(that, className) {
+    var coordinates = d3.mouse(that);
+    var x = coordinates[0] - 90;
+    var y = coordinates[1] - 60;
+    console.log(coordinates);
+    className = className
+      .split('-')
+      .slice(1)
+      .join(' ')
+      .replace(/(^| )(\w)/g, function(x) {
+        return x.toUpperCase();
+      });
+    d3.select('body')
+      .append('div')
+      .attr('id', 'pathway-data')
+      .attr('style', 'position:absolute; left:' + x + 'px; top:' + y + 'px; width:auto; height:200px; z-index: 999;')
+      .append('h2').text(className);
   },
 
-  hidePathWayInfo: function(className) {
-
+  hidePathWayInfo: function(that, className) {
+    d3.select('#pathway-data').remove();
   }
 
 });
