@@ -11,6 +11,9 @@ app.views.TransitAddView = Backbone.View.extend({
         pathInterpolation = options.pathInterpolation,
         lines = [], endLines = [];
 
+    this.pathway_data = options.pathway_data;
+    this.session_data = options.session_data;
+
     stations = this.processStations(stations);
 
     // generate lines with points
@@ -319,7 +322,8 @@ app.views.TransitAddView = Backbone.View.extend({
       .attr("class", function(d) { return d.className || ''; })
       .style("fill", function(d){ return d.pointColor; })
       .style("stroke", function(d){ return d.borderColor; })
-      .style("stroke-width", function(d){ return d.borderWidth; });
+      .style("stroke-width", function(d){ return d.borderWidth; })
+      .attr('id', function(d, i) { return "dot_" + i; });
   },
 
   drawRects: function(svg, rects){
@@ -405,7 +409,7 @@ app.views.TransitAddView = Backbone.View.extend({
     svg = d3.select("#svg-wrapper")
       .attr("width", width)
       .attr("height", height)
-      .append("svg")
+      .append("svg").attr('background-color', 'black')
       .attr("id", "map-svg")
       .attr("width", width)
       .attr("height", height);
@@ -1065,9 +1069,13 @@ app.views.TransitAddView = Backbone.View.extend({
     var that = this;
 
     var normal = options.strokeWidth,
-      thick = options.strokeSelectedWidth;
+      thick = options.strokeSelectedWidth,
+      normalr = options.stationRadius,
+      thickr = options.stationSelectedRadius;
 
-    d3.select("#svg-wrapper").selectAll('path')
+    var svg = d3.select("#svg-wrapper")
+
+    svg.selectAll('path')
       .on('mouseover', function(d) {
         var className = $(this).attr('class').split(' ')[0];
         d3.selectAll("." + className)
@@ -1086,13 +1094,34 @@ app.views.TransitAddView = Backbone.View.extend({
 
         that.hidePathWayInfo(this, className);
       });
+
+    svg.selectAll('.station')
+      .on('mouseover', function(d) {
+        var idName = $(this).attr('id').split(' ')[0];
+        console.log(idName);
+        // inflate the station
+        d3.selectAll("#" + idName)
+        .transition()
+        .duration(50)
+        .style('r', thickr)
+        .style('z-index', 999);
+      })
+      .on('mouseout', function(d) {
+        var idName = $(this).attr('id').split(' ')[0];
+        d3.selectAll("#" + idName)
+          .transition()
+          .duration(50)
+          .style('r', normalr);
+
+        // that.hidePathWayInfo(this, className);
+      });
   },
 
   showPathwayInfo: function(that, className) {
     var coordinates = d3.mouse(that);
     var x = coordinates[0] - 90;
     var y = coordinates[1] - 60;
-    console.log(coordinates);
+    var description = this.pathway_data[className];
     className = className
       .split('-')
       .slice(1)
@@ -1100,11 +1129,17 @@ app.views.TransitAddView = Backbone.View.extend({
       .replace(/(^| )(\w)/g, function(x) {
         return x.toUpperCase();
       });
-    d3.select('body')
+    var div = d3.select('body')
       .append('div')
       .attr('id', 'pathway-data')
-      .attr('style', 'position:absolute; left:' + x + 'px; top:' + y + 'px; width:auto; height:200px; z-index: 999;')
-      .append('h2').text(className);
+      .attr('style', 'position:absolute; left:' + x + 'px; top:' + y + 'px; width:auto; height:auto; padding:10px; z-index: 999; background-color: white; vertical-align:middle; margin:0; border: 2px; border-color: #333333; border-style: solid; border-radius: 10px;');
+
+    div.append('h2').text(className).attr('style', 'margin:0;');
+    console.log(className);
+    console.log(description);
+    if (description) {
+      div.append('p', description);
+    }
   },
 
   hidePathWayInfo: function(that, className) {

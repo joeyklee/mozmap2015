@@ -14,6 +14,8 @@ var config = {
     "maxTextLength": 24,
     "xSpacer": 50,
     "xStationPad": 30,
+    "stationRadius": 3,
+    "stationSelectedRadius": 20,
     "pathInterpolation": "linear", // linear, basis, cardinal, monotone
     "pointColor": "#444444",
     "pointColorInverse": "#ffffff",
