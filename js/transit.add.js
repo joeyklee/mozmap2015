@@ -13,7 +13,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
     // generate lines with points
     lines = this.makeLines(stations, width, height, options);
-    legend = this.makeLegend(lines, options);
+    // legend = this.makeLegend(lines, options);
     legend = {};
     endLines = this.makeEndLines(lines, options);
     lines = _.union(lines, endLines);
@@ -21,13 +21,6 @@ app.views.TransitAddView = Backbone.View.extend({
 
     // draw the svg map
     this.drawMap(stations, lines, legend, width, height, options);
-
-    if (options.animate) {
-      this.animateMap();
-    }
-
-    // activate pan-zoom
-    // this.panZoom($("map-svg"));
 
     // add listeners
     this.addListeners();
@@ -202,15 +195,13 @@ app.views.TransitAddView = Backbone.View.extend({
   getYBreaks: function(maxes) {
     breaks = {};
     total = 0;
-    i = 1;
     padding = 2;
     for (space in maxes) {
       if (maxes[space] > 0) {
-        breaks[space] = total + padding;
+        breaks[space] = total + ((total == 0) ? 0 : padding);
         total += maxes[space] + padding;
       }
     }
-    i++;
     return breaks;
   },
 
@@ -317,14 +308,9 @@ app.views.TransitAddView = Backbone.View.extend({
     });
   },
 
-  animateMap: function(){
-
-  },
-
   drawDots: function(svg, dots) {
     svg.selectAll("dot")
-      .data(dots.filter(function(d) { return d.pointRadius }))
-      .enter().append("circle")
+      .data(dots).enter().append("circle")
       .attr("r", function(d) { return d.pointRadius; })
       .attr("cx", function(d) { return d.x; })
       .attr("cy", function(d) { return d.y; })
@@ -442,12 +428,12 @@ app.views.TransitAddView = Backbone.View.extend({
 
     // draw lines, dots, labels, rects
     // this.drawRects(svg, legend.rects);
+    this.drawXAxis(stations, svg, options, height, width);
     this.makeSpaces(svg, stations, options, height, width);
     this.drawLines(svg, lines, options);
     this.drawRects(svg, rects, options);
     this.drawDots(svg, dots, options);
     this.drawLabels(svg, labels, options);
-    this.drawXAxis(stations, svg, options, height, width);
   },
 
   exportSVG: function(){
@@ -683,8 +669,8 @@ app.views.TransitAddView = Backbone.View.extend({
   makeLegend: function(lines, options){
     var // options
         canvasWidth = options.width,
-        canvasPaddingX = options.padding[0],
-        canvasPaddingY = options.padding[1],
+        canvasPaddingX = 0,
+        canvasPaddingY = 0,
         title = options.title,
         pointRadius = options.pointRadius,
         pointRadiusLarge = options.pointRadiusLarge,
@@ -980,12 +966,17 @@ app.views.TransitAddView = Backbone.View.extend({
         var njoinpointY = ntopY + njoinspacer;
         var nxspacer = shuntX+shunt+(3*shunt*((ni-2)-i))
         nextmidPoint = that
-          .getPoint(nxspacer, njoinpointY, pathway, pointClass, false);
+          .getPoint(nxspacer, njoinpointY, pathway, 'noend', false);
         // extend the canonical line
         these_paths[0].push(nextmidPoint);
         lastmidPoint = JSON.stringify(nextmidPoint);
 
       });
+
+      if (these_paths.length > 0 && these_paths[0].length > 0) {
+        these_paths[0][0].symbol = true;
+        _.last(these_paths[0]).symbol = true;
+      }
 
       these_paths.forEach(function(p) {
         paths.push({

@@ -1,7 +1,7 @@
 var palette = [];
 var config = {
     "width": 3900,
-    "height": 4000,
+    "height": 2200,
     "bgColor": "#f2e9b8",
     "padding": [100, 30],
     "textColor": "#000000",
@@ -34,15 +34,15 @@ var config = {
     "animationDuration": 0,
     "colors": palette, // generated later
     "legend": {
-        "width": 800,
-        "padding": 50,
+        "width": 3900,
+        "padding": 10,
         "bgColor": "#e8ddc2",
-        "columns": 1,
+        "columns": 12  ,
         "titleFontSize": 32,
         "titleMaxLineChars": 30,
         "titleLineHeight": 40,
         "fontSize": 14,
-        "lineHeight": 30,
+        "lineHeight": 20,
         "gridUnit": 20
     },
     "pathTypes": [{
