@@ -570,6 +570,8 @@ app.views.TransitAddView = Backbone.View.extend({
         endLines = [],
         xHash = {};
 
+    var pathWayDone = {};
+
     _.each(Object.keys(lines), function(pathway, i){
       var line = lines[pathway],
         firstPoint = _.first(line.points),
@@ -585,7 +587,7 @@ app.views.TransitAddView = Backbone.View.extend({
         var fpId = 'p' + firstPoint.y,
         lpId = 'p' + lastPoint.y;
 
-      // keep track of existing x points
+      // keep track of existing endlines points
       if (xHash[fpId]!==undefined) {
         xHash[fpId]++;
       } else {
@@ -613,6 +615,11 @@ app.views.TransitAddView = Backbone.View.extend({
         className: pointClassName
       });
 
+      if (pathWayDone[line.className]) {
+        // not the canonical path for this pathway
+        return;
+      }
+
       // make end line
       lineEnd.points.push({
         x: lastPoint.x,
@@ -631,6 +638,9 @@ app.views.TransitAddView = Backbone.View.extend({
 
       // add end lines
       endLines.push(lineStart, lineEnd);
+
+      // this was the canoninical path for this pathway
+      pathWayDone[line.className] = true;
 
     });
 
@@ -1050,22 +1060,38 @@ app.views.TransitAddView = Backbone.View.extend({
 
   setupMouseover: function(options) {
 
+    var that = this;
+
     var normal = options.strokeWidth,
       thick = options.strokeSelectedWidth;
 
     d3.select("#svg-wrapper").selectAll('path')
       .on('mouseover', function(d) {
-        d3.select("." + $(this).attr('class').split(' ')[0])
+        var className = $(this).attr('class').split(' ')[0];
+        d3.selectAll("." + className)
         .transition()
         .duration(50)
         .style('stroke-width', thick);
+
+        that.showPathwayInfo(className);
       })
       .on('mouseout', function(d) {
-        d3.select("." + $(this).attr('class').split(' ')[0])
+        var className = $(this).attr('class').split(' ')[0];
+        d3.selectAll("." + className)
           .transition()
           .duration(50)
           .style('stroke-width', normal);
-       });
+
+        that.hidePathWayInfo(className);
+      });
+  },
+
+  showPathwayInfo: function(className) {
+
+  },
+
+  hidePathWayInfo: function(className) {
+
   }
 
 });
