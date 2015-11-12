@@ -1,6 +1,11 @@
 // Helper functions
 (function() {
   window.helper = {};
+
+  helper.dataUrl = function(options, file) {
+    return options.data_root_url + file;
+  };
+
   helper.halton = function(index, base) {
     var result = 0;
     var f = 1 / base;

@@ -2,8 +2,6 @@ app.views.TransitAddView = Backbone.View.extend({
 
   el: 'body',
 
-
-
   initialize: function(options) {
     var stations = options.stations,
         width = options.width,
@@ -657,7 +655,9 @@ app.views.TransitAddView = Backbone.View.extend({
       yscale = this.getYScale(options, height, maxes),
       fill = "#000000";
 
+    console.log(options.spaces_data);
     for (space in breaks) {
+      var icon = options.spaces_data[space].iconUrl;
       var y = breaks[space];
       svg.append('rect')
         .attr('x', 0)
@@ -668,12 +668,19 @@ app.views.TransitAddView = Backbone.View.extend({
         .attr('fill-opacity', 0.4);
 
       svg.append('text')
-        .attr('x', 20)
+        .attr('x', 50)
         .attr('y', yscale(y) + 40)
         .attr("font-family", "sans-serif")
         .attr("font-size", "30px")
         .attr("fill", "#444444")
-        .text(space)
+        .text(space);
+
+      svg.append('image')
+          .attr('xlink:href', icon)
+          .attr('x', 15)
+          .attr('y', yscale(y) + 15)
+          .attr('height' ,'30px')
+          .attr('width', '30px');
 
     }
   },
@@ -1141,8 +1148,6 @@ app.views.TransitAddView = Backbone.View.extend({
       .attr('style', 'position:absolute; left:' + x + 'px; top:' + y + 'px; width:auto; height:auto; padding:10px; z-index: 999; background-color: white; vertical-align:middle; margin:0; border: 2px; border-color: #333333; border-style: solid; border-radius: 10px;');
 
     div.append('h2').text(className).attr('style', 'margin:0;');
-    console.log(className);
-    console.log(description);
     if (description) {
       div.append('p', description);
     }

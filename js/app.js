@@ -30,38 +30,53 @@ app.routers.MainRouter = Backbone.Router.extend({
 
   transitAdd: function(params){
     params = helper.parseQueryString(params);
-    $.getJSON("http://mozilla.github.io/mozfest-schedule-app/sessions.json")
-      .done(function(results) {
-        var session_data = {};
-        var sessions = results
-          .filter(function(session) {
-            session_data[session.title] = session;
-            return session.pathways.length > 0
-              && session.scheduleblock.length > 0
-              && session.start && session.start.length > 0
-              && session.space && session.space.length > 0;
-          })
-          .map(window.helper.mungeSessionData);
-        sessions = _.sortBy(sessions, 'pathway');
-        sessions = _.sortBy(sessions, 'datetime');
+    params = $.extend({}, config, params);
 
-        // write out the space-pathway matrix for clustering analysis
-        // window.helper.spacePathwayMatrix(sessions);
+    $.getJSON(helper.dataUrl(params, 'sessions.json'))
+    .done(function(results) {
+      var session_data = {};
+      var sessions = results
+        .filter(function(session) {
+          session_data[session.title] = session;
+          return session.pathways.length > 0
+            && session.scheduleblock.length > 0
+            && session.start && session.start.length > 0
+            && session.space && session.space.length > 0;
+        })
+        .map(window.helper.mungeSessionData);
+      sessions = _.sortBy(sessions, 'pathway');
+      sessions = _.sortBy(sessions, 'datetime');
 
-        params = $.extend({}, config, params, { stations: sessions });
-        params.title = 'MozFest 2015 Pathways Map';
-        $.getJSON("http://mozilla.github.io/mozfest-schedule-app/pathways.json")
-          .done(function(pathways) {
-            var pathway_data = {};
-            pathways.forEach(function(pathway) {
-              pathway_data[pathway.name] = pathway.description[0];
-            });
+      // write out the space-pathway matrix for clustering analysis
+      // window.helper.spacePathwayMatrix(sessions);
 
-            params.pathway_data = pathway_data;
-            params.session_data = session_data;
-            app.views.main = new app.views.TransitAddView(params);
+      params.stations = sessions;
+      params.title = 'MozFest 2015 Pathways Map';
+      $.getJSON(helper.dataUrl(params, 'pathways.json'))
+      .done(function(pathways) {
+        var pathway_data = {};
+        pathways.forEach(function(pathway) {
+          pathway_data[pathway.name] = pathway.description[0];
+        });
 
+        $.getJSON(helper.dataUrl(params, 'spaces.json'))
+        .done(function(spaces) {
+          var spaces_data = {};
+          spaces.forEach(function(space) {
+            space.name = helper.tidySpaceName(space.name);
+            spaces_data[space.name] = {
+              description: space.description,
+              iconUrl: helper.dataUrl(params, space.iconSrc)
+            };
           });
+
+          params.pathway_data = pathway_data;
+          params.session_data = session_data;
+          params.spaces_data = spaces_data;
+          app.views.main = new app.views.TransitAddView(params);
+        });
+
+      });
         // $('body').height(params.height).width(params.width);
      }
    );

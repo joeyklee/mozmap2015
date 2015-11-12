@@ -1,5 +1,6 @@
 var palette = [];
 var config = {
+    "data_root_url": "http://mozilla.github.io/mozfest-schedule-app/",
     "width": 3900,
     "height": 2200,
     "bgColor": "#f2e9b8",
