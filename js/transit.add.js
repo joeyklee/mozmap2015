@@ -371,30 +371,26 @@ app.views.TransitAddView = Backbone.View.extend({
       .y(function(d) { return d.y; });
 
     _.each(lines, function(line){
-      var points = line.points,
-          path = svg.append("path")
-                  .attr("d", svg_line(points))
-                  .attr("class", line.className)
-                  .style("stroke", line.color)
-                  .style("stroke-width", line.strokeWidth)
-                  .style("stroke-opacity", line.strokeOpacity)
-                  .style("fill", "none");
 
-      // animate if it's a solid line
-      if (path && animate && line.strokeDash=="none" && line.className.indexOf("primary")>=0) {
-        var totalLength = path.node().getTotalLength();
-        path
-          .attr("stroke-dasharray", totalLength + " " + totalLength)
-          .attr("stroke-dashoffset", totalLength)
-          .transition()
-            .duration(animationDuration)
-            .ease("linear")
-            .attr("stroke-dashoffset", 0)
+      var points = line.points;
 
-      // otherwise, set the stroke dash
-      } else {
-        path.style("stroke-dasharray", line.strokeDash);
-      }
+      var bgpath = svg.append("path")
+        .attr("d", svg_line(points))
+        .attr("class", 'bgline-' + line.className)
+        .style("stroke", "black")
+        .style("stroke-width", line.strokeWidth + 2)
+        .style("stroke-opacity", line.strokeOpacity)
+        .style("fill", "none")
+        .style("stroke-dasharray", line.strokeDash);
+
+      var path = svg.append("path")
+        .attr("d", svg_line(points))
+        .attr("class", line.className)
+        .style("stroke", line.color)
+        .style("stroke-width", line.strokeWidth)
+        .style("stroke-opacity", line.strokeOpacity)
+        .style("fill", "none")
+        .style("stroke-dasharray", line.strokeDash);
 
     });
   },
@@ -1075,13 +1071,18 @@ app.views.TransitAddView = Backbone.View.extend({
 
     var svg = d3.select("#svg-wrapper")
 
-    svg.selectAll('path')
+    svg.selectAll('path:not([class^="bgline-"])')
       .on('mouseover', function(d) {
         var className = $(this).attr('class').split(' ')[0];
         d3.selectAll("." + className)
         .transition()
         .duration(50)
         .style('stroke-width', thick);
+
+        d3.selectAll(".bgline-" + className)
+          .transition()
+          .duration(50)
+          .style('stroke-width', thick+2);
 
         that.showPathwayInfo(this, className);
       })
@@ -1092,13 +1093,18 @@ app.views.TransitAddView = Backbone.View.extend({
           .duration(50)
           .style('stroke-width', normal);
 
+        d3.selectAll(".bgline-" + className)
+          .transition()
+          .duration(50)
+          .style('stroke-width', normal + 2);
+
         that.hidePathWayInfo(this, className);
       });
 
     svg.selectAll('.station')
       .on('mouseover', function(d) {
         var idName = $(this).attr('id').split(' ')[0];
-        console.log(idName);
+
         // inflate the station
         d3.selectAll("#" + idName)
         .transition()

@@ -153,7 +153,7 @@
 
   helper.getPathways = function(sessions) {
     var nest_pathways = sessions.map(function(s){
-        return s.pathways;
+      return s.pathways;
     });
     return pathways = _.uniq(
       _.flatten(nest_pathways)
