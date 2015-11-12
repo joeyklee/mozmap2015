@@ -1,59 +1,72 @@
 var palette = [];
 var config = {
-    "width": 10000,
-    "height": 3600,
+    "width": 3900,
+    "height": 2200,
     "bgColor": "#f2e9b8",
-    "padding": [200, 200],
+    "padding": [100, 30],
     "textColor": "#000000",
     "fontFamily": "OpenSans, sans-serif",
     "fontSize": 13,
     "fontWeight": "normal",
-    "maxLines": 32,
+    "maxLines": 80,
     "maxPointsPerLine": 32,
     "minTextLength": 1,
     "maxTextLength": 24,
+    "xSpacer": 50,
+    "xStationPad": 30,
+    "stationRadius": 3,
+    "stationSelectedRadius": 20,
     "pathInterpolation": "linear", // linear, basis, cardinal, monotone
-    "pointColor": "#ffffff",
-    "pointColorInverse": "#444444",
+    "pointColor": "#444444",
+    "pointColorInverse": "#ffffff",
     "borderColor": "#444444",
     "borderColorInverse": "#ffffff",
-    "borderWidth": 2,
-    "borderRadius": 4,
-    "cornerRadius": 40,
-    "pointRadius": 4,
-    "pointRadiusLarge": 10,
-    "strokeWidth": 8,
+    "borderWidth": 1,
+    "borderRadius": 1,
+    "cornerRadius": 5,
+    "pointRadius": 3,
+    "pointRadiusLarge": 6,
+    "strokeWidth": 4,
+    "strokeSelectedWidth": 8,
     "strokeOpacity": 0.9,
-    "offsetWidth": 12,
+    "offsetHeight": 8,
     "minXDiff": 5,
-    "hubSize": 4,
+    "hubSize": 10,
     "animate": false,
-    "animationDuration": 10000,
+    "animationDuration": 0,
     "colors": palette, // generated later
     "legend": {
-        "width": 800,
-        "padding": 50,
+        "width": 3900,
+        "padding": 10,
         "bgColor": "#e8ddc2",
-        "columns": 2,
+        "columns": 12  ,
         "titleFontSize": 32,
         "titleMaxLineChars": 30,
         "titleLineHeight": 40,
         "fontSize": 14,
-        "lineHeight": 30,
+        "lineHeight": 20,
         "gridUnit": 20
     },
     "pathTypes": [{
-            "xDirection": "s",
-            "directions": ["s"]
+            "xDirection": "e",
+            "directions": ["e"]
         }, // straight line
         {
-            "xDirection": "e",
-            "directions": ["s", "e", "s"]
-        }, // elbow right
+            "xDirection": "s",
+            "directions": ["e", "s", "e"]
+        }, // elbow down
         {
-            "xDirection": "w",
-            "directions": ["s", "w", "s"]
-        }, // elbow left
+            "xDirection": "s",
+            "directions": ["e", "s", "s", "e"]
+        }, // double elbow down
+        {
+            "xDirection": "n",
+            "directions": ["e", "n", "e"]
+        }, // elbow up
+        {
+            "xDirection": "n",
+            "directions": ["e", "n", "n", "e"]
+        }, // double elbow up
     ]
 };
 
