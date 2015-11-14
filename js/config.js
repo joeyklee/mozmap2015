@@ -1,75 +1,227 @@
+var night = true;
 var palette = [];
-var config = {
-    "data_root_url": "http://mozilla.github.io/mozfest-schedule-app/",
-    "width": 3900,
-    "height": 2200,
-    "bgColor": "#f2e9b8",
-    "padding": [100, 30],
-    "textColor": "#000000",
-    "fontFamily": "OpenSans, sans-serif",
-    "fontSize": 13,
-    "fontWeight": "normal",
-    "maxLines": 80,
-    "maxPointsPerLine": 32,
-    "minTextLength": 1,
-    "maxTextLength": 24,
-    "xSpacer": 50,
-    "xStationPad": 30,
-    "stationRadius": 3,
-    "stationSelectedRadius": 20,
-    "pathInterpolation": "linear", // linear, basis, cardinal, monotone
-    "pointColor": "#444444",
-    "pointColorInverse": "#ffffff",
-    "borderColor": "#444444",
-    "borderColorInverse": "#ffffff",
-    "borderWidth": 1,
-    "borderRadius": 1,
-    "cornerRadius": 5,
-    "pointRadius": 3,
-    "pointRadiusLarge": 6,
-    "strokeWidth": 4,
-    "strokeSelectedWidth": 8,
-    "strokeOpacity": 0.9,
-    "offsetHeight": 8,
-    "minXDiff": 5,
-    "hubSize": 10,
-    "animate": false,
-    "animationDuration": 0,
-    "colors": palette, // generated later
-    "legend": {
+var config;
+
+if(night === true){
+    config = {
+        "data_root_url": "http://mozilla.github.io/mozfest-schedule-app/",
         "width": 3900,
-        "padding": 10,
-        "bgColor": "#e8ddc2",
-        "columns": 12  ,
-        "titleFontSize": 32,
-        "titleMaxLineChars": 30,
-        "titleLineHeight": 40,
-        "fontSize": 14,
-        "lineHeight": 20,
-        "gridUnit": 20
-    },
-    "pathTypes": [{
-            "xDirection": "e",
-            "directions": ["e"]
-        }, // straight line
-        {
-            "xDirection": "s",
-            "directions": ["e", "s", "e"]
-        }, // elbow down
-        {
-            "xDirection": "s",
-            "directions": ["e", "s", "s", "e"]
-        }, // double elbow down
-        {
-            "xDirection": "n",
-            "directions": ["e", "n", "e"]
-        }, // elbow up
-        {
-            "xDirection": "n",
-            "directions": ["e", "n", "n", "e"]
-        }, // double elbow up
-    ]
-};
+        "height": 2200,
+        "bgColor": "#1a1a1a",
+        "padding": [100, 30],
+        "textColor": "#b3b3b3",
+        "fontFamily": "OpenSans, sans-serif",
+        "fontSize": 13,
+        "fontWeight": "normal",
+        "maxLines": 80,
+        "maxPointsPerLine": 32,
+        "minTextLength": 1,
+        "maxTextLength": 24,
+        "xSpacer": 50,
+        "xStationPad": 30,
+        "stationRadius": 3,
+        "stationSelectedRadius": 20,
+        "pathInterpolation": "linear", // linear, basis, cardinal, monotone
+        "pointColor": "#ffffff",
+        "pointColorInverse": "#ffffff",
+        "borderColor": "#000000",
+        "borderColorInverse": "#ffffff",
+        "borderWidth": 1,
+        "borderRadius": 1,
+        "cornerRadius": 5,
+        "pointRadius": 3,
+        "pointRadiusLarge": 6,
+        "strokeWidth": 4,
+        "strokeSelectedWidth": 8,
+        "strokeOpacity": 0.9,
+        "offsetHeight": 8,
+        "minXDiff": 5,
+        "hubSize": 10,
+        "animate": false,
+        "animationDuration": 0,
+        "colors": palette, // generated later
+        "legend": {
+            "width": 3900,
+            "padding": 10,
+            "bgColor": "#e8ddc2",
+            "columns": 12  ,
+            "titleFontSize": 32,
+            "titleMaxLineChars": 30,
+            "titleLineHeight": 40,
+            "fontSize": 14,
+            "lineHeight": 20,
+            "gridUnit": 20
+        },
+        "pathTypes": [{
+                "xDirection": "e",
+                "directions": ["e"]
+            }, // straight line
+            {
+                "xDirection": "s",
+                "directions": ["e", "s", "e"]
+            }, // elbow down
+            {
+                "xDirection": "s",
+                "directions": ["e", "s", "s", "e"]
+            }, // double elbow down
+            {
+                "xDirection": "n",
+                "directions": ["e", "n", "e"]
+            }, // elbow up
+            {
+                "xDirection": "n",
+                "directions": ["e", "n", "n", "e"]
+            }, // double elbow up
+        ]
+    };
+}else {
+    config = {
+        "data_root_url": "http://mozilla.github.io/mozfest-schedule-app/",
+        "width": 3900,
+        "height": 2200,
+        "bgColor": "#f2e9b8",
+        "padding": [100, 30],
+        "textColor": "#000000",
+        "fontFamily": "OpenSans, sans-serif",
+        "fontSize": 13,
+        "fontWeight": "normal",
+        "maxLines": 80,
+        "maxPointsPerLine": 32,
+        "minTextLength": 1,
+        "maxTextLength": 24,
+        "xSpacer": 50,
+        "xStationPad": 30,
+        "stationRadius": 3,
+        "stationSelectedRadius": 20,
+        "pathInterpolation": "linear", // linear, basis, cardinal, monotone
+        "pointColor": "#444444",
+        "pointColorInverse": "#ffffff",
+        "borderColor": "#444444",
+        "borderColorInverse": "#ffffff",
+        "borderWidth": 1,
+        "borderRadius": 1,
+        "cornerRadius": 5,
+        "pointRadius": 3,
+        "pointRadiusLarge": 6,
+        "strokeWidth": 4,
+        "strokeSelectedWidth": 8,
+        "strokeOpacity": 0.9,
+        "offsetHeight": 8,
+        "minXDiff": 5,
+        "hubSize": 10,
+        "animate": false,
+        "animationDuration": 0,
+        "colors": palette, // generated later
+        "legend": {
+            "width": 3900,
+            "padding": 10,
+            "bgColor": "#e8ddc2",
+            "columns": 12  ,
+            "titleFontSize": 32,
+            "titleMaxLineChars": 30,
+            "titleLineHeight": 40,
+            "fontSize": 14,
+            "lineHeight": 20,
+            "gridUnit": 20
+        },
+        "pathTypes": [{
+                "xDirection": "e",
+                "directions": ["e"]
+            }, // straight line
+            {
+                "xDirection": "s",
+                "directions": ["e", "s", "e"]
+            }, // elbow down
+            {
+                "xDirection": "s",
+                "directions": ["e", "s", "s", "e"]
+            }, // double elbow down
+            {
+                "xDirection": "n",
+                "directions": ["e", "n", "e"]
+            }, // elbow up
+            {
+                "xDirection": "n",
+                "directions": ["e", "n", "n", "e"]
+            }, // double elbow up
+        ]
+    };
+    
+}
+
+
+
+// var config = {
+//     "data_root_url": "http://mozilla.github.io/mozfest-schedule-app/",
+//     "width": 3900,
+//     "height": 2200,
+//     "bgColor": "#f2e9b8",
+//     "padding": [100, 30],
+//     "textColor": "#000000",
+//     "fontFamily": "OpenSans, sans-serif",
+//     "fontSize": 13,
+//     "fontWeight": "normal",
+//     "maxLines": 80,
+//     "maxPointsPerLine": 32,
+//     "minTextLength": 1,
+//     "maxTextLength": 24,
+//     "xSpacer": 50,
+//     "xStationPad": 30,
+//     "stationRadius": 3,
+//     "stationSelectedRadius": 20,
+//     "pathInterpolation": "linear", // linear, basis, cardinal, monotone
+//     "pointColor": "#444444",
+//     "pointColorInverse": "#ffffff",
+//     "borderColor": "#444444",
+//     "borderColorInverse": "#ffffff",
+//     "borderWidth": 1,
+//     "borderRadius": 1,
+//     "cornerRadius": 5,
+//     "pointRadius": 3,
+//     "pointRadiusLarge": 6,
+//     "strokeWidth": 4,
+//     "strokeSelectedWidth": 8,
+//     "strokeOpacity": 0.9,
+//     "offsetHeight": 8,
+//     "minXDiff": 5,
+//     "hubSize": 10,
+//     "animate": false,
+//     "animationDuration": 0,
+//     "colors": palette, // generated later
+//     "legend": {
+//         "width": 3900,
+//         "padding": 10,
+//         "bgColor": "#e8ddc2",
+//         "columns": 12  ,
+//         "titleFontSize": 32,
+//         "titleMaxLineChars": 30,
+//         "titleLineHeight": 40,
+//         "fontSize": 14,
+//         "lineHeight": 20,
+//         "gridUnit": 20
+//     },
+//     "pathTypes": [{
+//             "xDirection": "e",
+//             "directions": ["e"]
+//         }, // straight line
+//         {
+//             "xDirection": "s",
+//             "directions": ["e", "s", "e"]
+//         }, // elbow down
+//         {
+//             "xDirection": "s",
+//             "directions": ["e", "s", "s", "e"]
+//         }, // double elbow down
+//         {
+//             "xDirection": "n",
+//             "directions": ["e", "n", "e"]
+//         }, // elbow up
+//         {
+//             "xDirection": "n",
+//             "directions": ["e", "n", "n", "e"]
+//         }, // double elbow up
+//     ]
+// };
 
 (function genColors() {
   var cols = [
