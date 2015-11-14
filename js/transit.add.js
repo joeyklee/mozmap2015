@@ -396,6 +396,7 @@ app.views.TransitAddView = Backbone.View.extend({
   drawMap: function(stations, lines, legend, width, height, options){
     var bgColor = options.bgColor,
         svg, points, dots, labels, rects;
+    
 
     // init svg and add to DOM
     $("body").height(height).width(width);
@@ -403,7 +404,7 @@ app.views.TransitAddView = Backbone.View.extend({
     svg = d3.select("#svg-wrapper")
       .attr("width", width)
       .attr("height", height)
-      .append("svg").attr('background-color', 'black')
+      .append("svg").style('background-color', bgColor)
       .attr("id", "map-svg")
       .attr("width", width)
       .attr("height", height);
