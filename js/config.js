@@ -1,8 +1,8 @@
-var night = true;
+var theme = 'night';
 var palette = [];
 var config;
 
-if(night === true){
+if(theme === 'night'){
     config = {
         "data_root_url": "http://mozilla.github.io/mozfest-schedule-app/",
         "width": 3900,
