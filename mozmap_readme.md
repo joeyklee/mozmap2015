@@ -9,7 +9,7 @@ curl https://install.meteor.com/ | sh
 
 ### First cd to the directory:
 ```
-cd moztweetapp
+cd mozmap
 ```
 
 ### Install node package manager for the  Meteor project:
