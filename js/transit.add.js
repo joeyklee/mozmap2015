@@ -1109,10 +1109,25 @@ app.views.TransitAddView = Backbone.View.extend({
         that.hidePathWayInfo(this, className);
       });
 
+
     svg.selectAll('.station')
       .on('mouseover', function(d) {
         var idName = $(this).attr('id').split(' ')[0];
+         console.log(d);
 
+         // add tooltip location
+         var xPosition = parseFloat(d3.mouse(this)[0]);
+         var yPosition = parseFloat(d3.mouse(this)[1]);
+         console.log(xPosition);
+         //Update the tooltip position and value
+         d3.select("#stationTooltip")
+             .style("left", xPosition + "px")
+             .style("top", yPosition + "px")
+             .select("#value")
+             .text(d.label);
+
+         //Show the tooltip
+         d3.select("#stationTooltip").classed("hidden", false);
         // inflate the station
         d3.selectAll("#" + idName)
         .transition()
@@ -1127,6 +1142,7 @@ app.views.TransitAddView = Backbone.View.extend({
           .duration(50)
           .style('r', normalr);
 
+          d3.select("#stationTooltip").classed("hidden", true);
         // that.hidePathWayInfo(this, className);
       });
   },
