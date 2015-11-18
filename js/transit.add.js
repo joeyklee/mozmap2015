@@ -268,7 +268,11 @@ app.views.TransitAddView = Backbone.View.extend({
       return p.pointRadius && p.pointRadius > 0;
     });
     labels = _.filter(points, function(p) {
-      return p.label !== undefined || p.symbol !== undefined;
+      return p.canonical
+        && (
+          p.label !== undefined
+          || p.symbol !== undefined
+        );
     });
     rects = _.filter(points, function(p) {
       return p.hubSize;
@@ -620,12 +624,15 @@ app.views.TransitAddView = Backbone.View.extend({
             pointClass + " station", pointRadius);
           if (p.pathways.indexOf(pathway) == 0) {
             stationPoint.hubSize = p.pathways.length;
-            stationPoint.label = p.title;
-            stationPoint.location = p.location;
-            stationPoint.start = p.start;
-            stationPoint.facilitators = p.facilitators;
-            // console.log(p);
+            stationPoint.canonical = true;
           }
+
+          stationPoint.label = p.title;
+          stationPoint.location = p.location;
+          stationPoint.start = p.start;
+          stationPoint.facilitators = p.facilitators;
+
+            // console.log(p);
           path.push(stationPoint);
           // to the right
           var postpoint =
@@ -875,7 +882,6 @@ app.views.TransitAddView = Backbone.View.extend({
         "<strong>Checkins: </strong>" + "❤"
       );
 
-
       //Show the tooltip
       d3.select("#stationTooltip").classed("hidden", false);
       // inflate the station
@@ -928,7 +934,6 @@ app.views.TransitAddView = Backbone.View.extend({
   },
 
 // SECTION: styling of graphical elements
-
 
   addDotStyles: function(dots, options) {
 
@@ -1044,7 +1049,6 @@ app.views.TransitAddView = Backbone.View.extend({
 
     return lines;
   },
-
 
 // SECTION: post-processing
 
