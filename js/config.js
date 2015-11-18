@@ -1,4 +1,4 @@
-var theme = 'night';
+var theme = 'light';
 var palette = [];
 
 var lightStyle = {

@@ -23,7 +23,7 @@ app.views.TransitAddView = Backbone.View.extend({
     lines = _.flatten(_.values(lines));
 
     // draw the svg map
-    this.drawMap(stations, lines, legend, width, height, options);
+    var svg = this.drawMap(stations, lines, legend, width, height, options);
 
     // add listeners
     this.addListeners();
@@ -33,6 +33,10 @@ app.views.TransitAddView = Backbone.View.extend({
 
     // setup mouseover
     this.setupMouseover(options);
+
+    // fisheye lens
+    applyLens(svg, height, width);
+
   },
 
   addDotStyles: function(dots, options){
@@ -396,7 +400,7 @@ app.views.TransitAddView = Backbone.View.extend({
   drawMap: function(stations, lines, legend, width, height, options){
     var bgColor = options.bgColor,
         svg, points, dots, labels, rects;
-    
+
 
     // init svg and add to DOM
     $("body").height(height).width(width);
@@ -435,6 +439,8 @@ app.views.TransitAddView = Backbone.View.extend({
     this.drawRects(svg, rects, options);
     this.drawDots(svg, dots, options);
     this.drawLabels(svg, labels, options);
+
+    return svg;
   },
 
   exportSVG: function(){
