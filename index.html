@@ -7,16 +7,49 @@
     <title>Mozfest Map 2015</title>
     <meta name="description" content="Your Mozfest Map">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/app.css">
 </head>
 
 <body>
-    <div id="svg-wrapper" class="svg-wrapper">
-        <div id="stationTooltip" class="hidden">
-            <p><span id="value"></span></p>
-        </div>
+    <!-- <div id= "infobox" class="glyphicon glyphicon-info-sign"></div> -->
+    
+
+    <div id="stationTooltip" class="hidden">
+        <p><span id="value"></span></p>
     </div>
+
+    <div class="col-lg-12">
+      <div class="col-lg-1">
+        <!-- <button id="infobox" type="button" class="btn btn-default btn-lg">
+            <span class="glyphicon glyphicon-info-sign"> 
+         </span><h2> MozMapp </h2>
+        </button> -->
+        <div id="main" class="active">
+            <h1>MozMapp</h1>
+            <div>
+                <h3>Navigate the chaos of MozFest!</h3>
+                <h4>Here's how it works:</h4>
+                <p>
+                    <ul>
+                        <li>The map is organized by space (from top to bottom) and time (from left to right).</li>
+                        <li>Hover over each dot to reveal more information about each session.</li>
+                        <li>You can follow one of the many pathways for a more curated MozFest experience or simply choose you own adventure.</li>
+                        <li>Tweet #mozmap + <em>session number</em> (e.g. #mozmap12) to check-in to your session. </li>
+                    </ul>
+                </p>
+            </div>
+        </div>
+      </div>
+      <div class="col-lg-11">
+        <div id="svg-wrapper" class="svg-wrapper"></div>
+      </div>
+
+    </div>
+
+
     <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/underscore-min.js"></script>
     <script type="text/javascript" src="js/backbone-min.js"></script>
     <script type="text/javascript" src="js/d3.min.js"></script>

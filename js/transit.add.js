@@ -1208,8 +1208,6 @@ app.views.TransitAddView = Backbone.View.extend({
                         "<strong>Facilitator(s): </strong>" + d.facilitators + "<br>" +
                         "<strong>Checkins: </strong>" + "❤"
                     );
-
-
                 //Show the tooltip
                 d3.select("#stationTooltip").classed("hidden", false);
                 // inflate the station

@@ -311,3 +311,14 @@ ul {
     font-size: 16px;
     line-height: 20px;
 }
+
+li{
+   list-style-type: circle;
+   margin-left: 30px;
+}
+
+#main{
+    float:right;
+    padding:20px;
+    background:rgb(242, 233, 184);
+}
