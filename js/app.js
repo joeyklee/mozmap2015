@@ -32,6 +32,9 @@ app.routers.MainRouter = Backbone.Router.extend({
     params = helper.parseQueryString(params);
     params = $.extend({}, config, params);
 
+    // temporarily filter out some spaces to make things clean
+    var keep_spaces = ['Science', 'Building Participation', 'Journalism'];
+
     $.getJSON(helper.dataUrl(params, 'sessions.json'))
     .done(function(results) {
       var session_data = {};
@@ -43,7 +46,11 @@ app.routers.MainRouter = Backbone.Router.extend({
             && session.start && session.start.length > 0
             && session.space && session.space.length > 0;
         })
-        .map(window.helper.mungeSessionData);
+        .map(window.helper.mungeSessionData)
+        .filter(function(session) {
+          return session.space && keep_spaces.indexOf(session.space) != -1;
+        });
+      console.log(sessions);
       sessions = _.sortBy(sessions, 'pathway');
       sessions = _.sortBy(sessions, 'datetime');
 
@@ -64,6 +71,7 @@ app.routers.MainRouter = Backbone.Router.extend({
           var spaces_data = {};
           spaces.forEach(function(space) {
             space.name = helper.tidySpaceName(space.name);
+            if (keep_spaces.indexOf(space.name) == -1) return;
             spaces_data[space.name] = {
               description: space.description,
               iconUrl: helper.dataUrl(params, space.iconSrc)

@@ -18,7 +18,7 @@ var darkStyle = {
 var config = {
     "data_root_url": "http://mozilla.github.io/mozfest-schedule-app/",
     "width": 3900,
-    "height": 2200,
+    "height": 1000,
     "bgColor": "#1a1a1a",
     "padding": [100, 30],
     "textColor": "#b3b3b3",
