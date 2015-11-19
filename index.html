@@ -2,36 +2,62 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Mozfest Map 2015</title>
-    <meta name="description" content="Your Mozfest Map">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/app.css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Mozfest Map 2015</title>
+  <meta name="description" content="Your Mozfest Map">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/app.css">
 </head>
 
 <body>
-    <div id="svg-wrapper" class="svg-wrapper">
-        <div id="stationTooltip" class="hidden">
-            <p><span id="value"></span></p>
-        </div>
+  <!-- <div id= "infobox" class="glyphicon glyphicon-info-sign"></div> -->
+
+
+
+
+    <div id="main" class="active">
+      <h1 style="margin-top: 0;">MozMapp</h1>
+      <div>
+        <p>MozFest is beautifully chaotic.</p>
+        <p>MozMapp helps you navigate the chaos.</p>
+        <h4>Here's how it works:</h4>
+        <p>
+          <ul>
+            <li>The map is organized by space (from top to bottom) and time (from left to right).</li>
+            <li>Hover over each dot to reveal more information about each session.</li>
+            <li>You can follow one of the many pathways for a more curated MozFest experience or simply choose your own adventure.</li>
+            <li>Tweet #mozmap + <em>session number</em> (e.g. #mozmap12) to check-in to your session. </li>
+          </ul>
+        </p>
+      </div>
+      <div id="stationInfo" style="visibility: hidden;">
+      </div>
     </div>
-    <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
-    <script type="text/javascript" src="js/underscore-min.js"></script>
-    <script type="text/javascript" src="js/backbone-min.js"></script>
-    <script type="text/javascript" src="js/d3.min.js"></script>
-    <script type="text/javascript" src="js/moment.min.js"></script>
-    <script type="text/javascript" src="js/jQuery.succinct.min.js"></script>
-    <script type="text/javascript" src="js/config.js"></script>
-    <script type="text/javascript" src="js/helpers.js"></script>
-    <script type="text/javascript" src="js/app.js"></script>
-    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="js/jquery.ui.touch-punch.min.js"></script>
-    <script type="text/javascript" src="js/jquery.panzoom.min.js"></script>
-    <script type="text/javascript" src="js/map.js"></script>
-    <script type="text/javascript" src="js/maps.js"></script>
-    <script type="text/javascript" src="js/transit.add.js"></script>
-    <script type="text/javascript" src="js/transit.show.js"></script>
+
+    <div id="svg-wrapper" class="svg-wrapper"></div>
+
+  </div>
+
+
+  <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="js/underscore-min.js"></script>
+  <script type="text/javascript" src="js/backbone-min.js"></script>
+  <script type="text/javascript" src="js/d3.min.js"></script>
+  <script type="text/javascript" src="js/moment.min.js"></script>
+  <script type="text/javascript" src="js/jQuery.succinct.min.js"></script>
+  <script type="text/javascript" src="js/config.js"></script>
+  <script type="text/javascript" src="js/helpers.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
+  <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="js/jquery.ui.touch-punch.min.js"></script>
+  <script type="text/javascript" src="js/jquery.panzoom.min.js"></script>
+  <script type="text/javascript" src="js/map.js"></script>
+  <script type="text/javascript" src="js/maps.js"></script>
+  <script type="text/javascript" src="js/transit.add.js"></script>
+  <script type="text/javascript" src="js/transit.show.js"></script>
 </body>
 
 </html>

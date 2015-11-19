@@ -4,6 +4,8 @@ window.app = {
   views: {},
   routers: {},
   init: function() {
+
+
     app.routers.main = new app.routers.MainRouter();
     // Enable pushState for compatible browsers
     var enablePushState = true;
@@ -50,7 +52,6 @@ app.routers.MainRouter = Backbone.Router.extend({
         .filter(function(session) {
           return session.space && keep_spaces.indexOf(session.space) != -1;
         });
-      console.log(sessions);
       sessions = _.sortBy(sessions, 'pathway');
       sessions = _.sortBy(sessions, 'datetime');
 
@@ -105,4 +106,13 @@ app.routers.MainRouter = Backbone.Router.extend({
 // Init backbone app
 $(document).ready(function(){
   app.init();
+
+  $('#infobox').on('click', function(){
+    if ($('#main').attr('class') == "hidden"){
+      $('#main').attr('class', 'active');
+    } else{
+      $('#main').attr('class', 'hidden');
+    }
+  });
+
 });

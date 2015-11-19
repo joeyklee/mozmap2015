@@ -106,25 +106,32 @@ app.views.TransitAddView = Backbone.View.extend({
     .style("stroke-width", function(d) {
       return d.borderWidth;
     })
+    .style("pointer-events", 'none')
     .attr('id', function(d, i) {
       return "dot_" + i;
     });
   },
 
   drawRects: function(svg, rects) {
-    _.each(rects, function(r) {
-      svg.append("rect")
-      .attr("width", r.width)
-      .attr("height", r.height)
-      .attr("x", r.rectX)
-      .attr("y", r.rectY)
-      .attr("rx", r.borderRadius)
-      .attr("ry", r.borderRadius)
-      .attr("class", r.className)
-      .style("fill", r.pointColor)
-      .style("stroke", r.borderColor)
-      .style("stroke-width", r.borderWidth);
-    });
+    var datakeys = [
+      'label',
+      'start',
+      'location',
+      'facilitators',
+      'description'
+    ]
+    var rect = svg.selectAll("rect").data(rects).enter().append("rect")
+      .attr("width", function(d) { return d.width })
+      .attr("height", function(d) { return d.height })
+      .attr("x", function(d) { return d.rectX })
+      .attr("y", function(d) { return d.rectY })
+      .attr("rx", function(d) { return d.borderRadius })
+      .attr("ry", function(d) { return d.borderRadius })
+      .attr("class", function(d) { return d.className })
+      .attr("id", function(d, i) { return "hub-" + i })
+      .style("fill", function(d) { return d.pointColor })
+      .style("stroke", function(d) { return d.borderColor })
+      .style("stroke-width", function(d) { return d.borderWidth });
   },
 
   drawLabels: function(svg, labels, options) {
@@ -431,7 +438,6 @@ app.views.TransitAddView = Backbone.View.extend({
     yscale = this.getYScale(options, height, maxes),
     fill = "#000000";
 
-    console.log(options.spaces_data);
     for (space in breaks) {
       var icon = options.spaces_data[space].iconUrl;
       var y = breaks[space];
@@ -622,18 +628,20 @@ app.views.TransitAddView = Backbone.View.extend({
           var stationPoint =
           that.getPoint(startX, pointY, pathway,
             pointClass + " station", pointRadius);
+
           if (p.pathways.indexOf(pathway) == 0) {
             stationPoint.hubSize = p.pathways.length;
             stationPoint.canonical = true;
           }
-
+          stationPoint.pathway = pathway;
           stationPoint.label = p.title;
           stationPoint.location = p.location;
           stationPoint.start = p.start;
           stationPoint.facilitators = p.facilitators;
+          stationPoint.description = p.description;
 
-            // console.log(p);
           path.push(stationPoint);
+
           // to the right
           var postpoint =
           that.getPoint(startX + xStationPad, pointY, pathway,
@@ -862,44 +870,24 @@ app.views.TransitAddView = Backbone.View.extend({
       that.hidePathWayInfo(this, className);
     });
 
-
-    svg.selectAll('.station')
+    svg.selectAll('rect.station')
     .on('mouseover', function(d) {
       var idName = $(this).attr('id').split(' ')[0];
+      console.log(d)
 
-      // add tooltip location
-      var xPosition = parseFloat(d3.mouse(this)[0]);
-      var yPosition = parseFloat(d3.mouse(this)[1]);
       //Update the tooltip position and value
-      d3.select("#stationTooltip")
-      .style("left", xPosition + "px")
-      .style("top", yPosition + "px")
-      .select("#value").html(
+      var info =
         "<strong>Session: </strong>" + d.label + "<br>" +
         "<strong>Time: </strong>" + d.start + "<br>" +
         "<strong>Location: </strong>" + d.location + "<br>" +
         "<strong>Facilitator(s): </strong>" + d.facilitators + "<br>" +
-        "<strong>Checkins: </strong>" + "❤"
-      );
+        "<strong>Checkins: </strong>" + "❤" +
+        "<p>" + d.description + "</p>";
 
-      //Show the tooltip
-      d3.select("#stationTooltip").classed("hidden", false);
-      // inflate the station
-      d3.selectAll("#" + idName)
-      .transition()
-      .duration(50)
-      .style('r', thickr)
-      .style('z-index', 999);
-    })
-    .on('mouseout', function(d) {
-      var idName = $(this).attr('id').split(' ')[0];
-      d3.selectAll("#" + idName)
-      .transition()
-      .duration(50)
-      .style('r', normalr);
+      d3.select("#stationInfo")
+        .html(info)
+        .style("visibility", "visible");
 
-      d3.select("#stationTooltip").classed("hidden", true);
-      // that.hidePathWayInfo(this, className);
     });
 
   },
