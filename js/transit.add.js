@@ -76,8 +76,10 @@ app.views.TransitAddView = Backbone.View.extend({
     datetime = station.datetime.unix(),
     space = station.space;
     var spacestart = breaks[space];
-    var spaceindex = times[space][datetime].indexOf(station) + 2;
-    return spacestart + spaceindex;
+
+    var spaceindex = Object.keys(times).indexOf(space);
+    var sessindex = times[space][datetime].indexOf(station) + 2;
+    return spacestart + sessindex + (spaceindex * 0.1);
   },
 
 // SECTION: draw graphical elements
@@ -407,7 +409,7 @@ app.views.TransitAddView = Backbone.View.extend({
       var y = breaks[space];
       svg.append('rect')
       .attr('x', 0)
-      .attr('y', yscale(y))
+      .attr('y', yscale(y) - 5)
       .attr('height', 5)
       .attr('width', width)
       .attr('fill', fill)
@@ -415,7 +417,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
       svg.append('text')
       .attr('x', 50)
-      .attr('y', yscale(y) + 40)
+      .attr('y', yscale(y) + 35)
       .attr("font-family", "sans-serif")
       .attr("font-size", "30px")
       .attr("fill", "#444444")
@@ -424,7 +426,7 @@ app.views.TransitAddView = Backbone.View.extend({
       svg.append('image')
       .attr('xlink:href', icon)
       .attr('x', 15)
-      .attr('y', yscale(y) + 15)
+      .attr('y', yscale(y) + 10)
       .attr('height', '30px')
       .attr('width', '30px');
 

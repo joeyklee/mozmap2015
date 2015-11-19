@@ -50,7 +50,7 @@ app.routers.MainRouter = Backbone.Router.extend({
         })
         .map(window.helper.mungeSessionData)
         .filter(function(session) {
-          return session.space && keep_spaces.indexOf(session.space) != -1;
+          return session.space;
         });
       sessions = _.sortBy(sessions, 'pathway');
       sessions = _.sortBy(sessions, 'datetime');
@@ -72,7 +72,7 @@ app.routers.MainRouter = Backbone.Router.extend({
           var spaces_data = {};
           spaces.forEach(function(space) {
             space.name = helper.tidySpaceName(space.name);
-            if (keep_spaces.indexOf(space.name) == -1) return;
+            // if (keep_spaces.indexOf(space.name) == -1) return;
             spaces_data[space.name] = {
               description: space.description,
               iconUrl: helper.dataUrl(params, space.iconSrc)
