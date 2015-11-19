@@ -83,3 +83,14 @@ div.col-lg-12, div.col-lg-1, div.col-lg-11 {
   border-color: black;
   overflow-y: scroll;
 }
+
+.glyphicon{
+  cursor: pointer;
+}
+
+#infobox span{
+  word-spacing: -10px;
+  font-weight: bold;
+  margin-left: -10px;
+  cursor:pointer;
+}
