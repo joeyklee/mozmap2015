@@ -61,6 +61,8 @@ div.col-lg-12, div.col-lg-1, div.col-lg-11 {
   padding: 20px;
   height: 100%;
   z-index: 999;
+  border-right:solid;
+  border-color: rgb(51, 51, 51);
 }
 
 #svg-wrapper {
@@ -82,6 +84,7 @@ div.col-lg-12, div.col-lg-1, div.col-lg-11 {
   border-style: dotted;
   border-color: black;
   overflow-y: scroll;
+  padding-bottom: 500px;
 }
 
 .glyphicon{
