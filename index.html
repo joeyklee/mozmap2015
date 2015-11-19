@@ -1,31 +1,53 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Brian Foo | Personal Transit Map of Memories</title>
-  <meta name="description" content="A map experiment by Brian Foo using D3">
+  <title>Mozfest Map 2015</title>
+  <meta name="description" content="Your Mozfest Map">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- <meta name="image_src" content="img/youaremyhere.jpg">
-  <meta property="og:image" content="img/youaremyhere.jpg" />  -->
-
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/app.css">
 </head>
-<body>
-<div id="svg-wrapper" class="svg-wrapper"></div>
 
-<div class="svg-controls">
-  <a href="#zoom-in" class="svg-zoom-in">+</a>
-  <a href="#zoom-out" class="svg-zoom-out">-</a>
-</div>
+<body>
+
+    <div id="main" class="active">
+      <div id="mapinfo">
+        <h1 style="margin-top: 0;">MozMapp</h1>
+        <p>MozFest is beautifully chaotic.</p>
+        <p>MozMapp helps you navigate the chaos.</p>
+
+        <div id="infobox" class="glyphicon glyphicon-info-sign"> <span>Learn More</span></div>
+        <p>
+          <ul id="instructions" class="hidden">
+            <li>The map is organized by space (from top to bottom) and time (from left to right).</li>
+            <li>Hover over each dot to reveal more information about each session.</li>
+            <li>You can follow one of the many pathways for a more curated MozFest experience or simply choose your own adventure.</li>
+            <li>Tweet #mozmap + <em>session number</em> (e.g. #mozmap12) to check-in to your session. </li>
+          </ul>
+        </p>
+      </div>
+      <div id="stationInfo" style="visibility: hidden;">
+      </div>
+    </div>
+
+    <div id="svg-wrapper" class="svg-wrapper"></div>
+
+  </div>
+
+
   <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="js/underscore-min.js"></script>
   <script type="text/javascript" src="js/backbone-min.js"></script>
   <script type="text/javascript" src="js/d3.min.js"></script>
+  <script type="text/javascript" src="js/moment.min.js"></script>
+  <script type="text/javascript" src="js/jQuery.succinct.min.js"></script>
   <script type="text/javascript" src="js/config.js"></script>
   <script type="text/javascript" src="js/helpers.js"></script>
   <script type="text/javascript" src="js/app.js"></script>
-
   <script type="text/javascript" src="js/jquery-ui.min.js"></script>
   <script type="text/javascript" src="js/jquery.ui.touch-punch.min.js"></script>
   <script type="text/javascript" src="js/jquery.panzoom.min.js"></script>
@@ -34,4 +56,5 @@
   <script type="text/javascript" src="js/transit.add.js"></script>
   <script type="text/javascript" src="js/transit.show.js"></script>
 </body>
+
 </html>

@@ -4,6 +4,8 @@ window.app = {
   views: {},
   routers: {},
   init: function() {
+
+
     app.routers.main = new app.routers.MainRouter();
     // Enable pushState for compatible browsers
     var enablePushState = true;
@@ -29,29 +31,66 @@ app.routers.MainRouter = Backbone.Router.extend({
   },
 
   transitAdd: function(params){
-     params = helper.parseQueryString(params);
-     $.getJSON("http://mozilla.github.io/mozfest-schedule-app/sessions.json")
-       .done(function(results) {
-         var stations = results.filter(function(session) {
-           return session.pathways.length > 0;
-         }).map(function(session) {
-           var lines = session.pathways
-             .split(',') // split joined pathways
-             .map(function(x) {
-               return x.trim();
-             }) // handle leading/trailing spaces
-             .filter(function(x) {
-               return x.length > 0; // remove empty strings
-             });
-             console.log(lines);
-           return { label: session.title, lines: lines };
-         });
+    params = helper.parseQueryString(params);
+    params = $.extend({}, config, params);
 
-         params = $.extend({}, config, params, { stations: stations });
-         params.title = 'MozFest 2015 Pathways Map';
-         app.views.main = new app.views.TransitAddView(params);
-       });
-   },
+    // temporarily filter out some spaces to make things clean
+    var keep_spaces = ['Science', 'Building Participation', 'Journalism', 'Youth Zone', 'Global Village', 
+    'Digital Citizenship'];
+
+    $.getJSON(helper.dataUrl(params, 'sessions.json'))
+    .done(function(results) {
+      var session_data = {};
+      var sessions = results
+        .filter(function(session) {
+          session_data[session.title] = session;
+          return session.pathways.length > 0
+            && session.scheduleblock.length > 0
+            && session.start && session.start.length > 0
+            && session.space && session.space.length > 0;
+        })
+        .map(window.helper.mungeSessionData)
+        .filter(function(session) {
+          return session.space;
+        });
+      sessions = _.sortBy(sessions, 'pathway');
+      sessions = _.sortBy(sessions, 'datetime');
+
+      // write out the space-pathway matrix for clustering analysis
+      // window.helper.spacePathwayMatrix(sessions);
+
+      params.stations = sessions;
+      params.title = 'MozFest 2015 Pathways Map';
+      $.getJSON(helper.dataUrl(params, 'pathways.json'))
+      .done(function(pathways) {
+        var pathway_data = {};
+        pathways.forEach(function(pathway) {
+          pathway_data[pathway.name] = pathway.description[0];
+        });
+
+        $.getJSON(helper.dataUrl(params, 'spaces.json'))
+        .done(function(spaces) {
+          var spaces_data = {};
+          spaces.forEach(function(space) {
+            space.name = helper.tidySpaceName(space.name);
+            // if (keep_spaces.indexOf(space.name) == -1) return;
+            spaces_data[space.name] = {
+              description: space.description,
+              iconUrl: helper.dataUrl(params, space.iconSrc)
+            };
+          });
+
+          params.pathway_data = pathway_data;
+          params.session_data = session_data;
+          params.spaces_data = spaces_data;
+          app.views.main = new app.views.TransitAddView(params);
+        });
+
+      });
+        // $('body').height(params.height).width(params.width);
+     }
+   );
+  },
 
   transitEdit: function(id){
     var map = null;
@@ -68,4 +107,13 @@ app.routers.MainRouter = Backbone.Router.extend({
 // Init backbone app
 $(document).ready(function(){
   app.init();
+
+  $('#infobox').on('click', function(){
+    if ($('#instructions').attr('class') == "hidden"){
+      $('#instructions').attr('class', 'active');
+    } else{
+      $('#instructions').attr('class', 'hidden');
+    }
+  });
+
 });
