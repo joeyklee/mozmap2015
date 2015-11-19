@@ -35,7 +35,8 @@ app.routers.MainRouter = Backbone.Router.extend({
     params = $.extend({}, config, params);
 
     // temporarily filter out some spaces to make things clean
-    var keep_spaces = ['Science', 'Building Participation', 'Journalism'];
+    var keep_spaces = ['Science', 'Building Participation', 'Journalism', 'Youth Zone', 'Global Village', 
+    'Digital Citizenship'];
 
     $.getJSON(helper.dataUrl(params, 'sessions.json'))
     .done(function(results) {
@@ -108,10 +109,10 @@ $(document).ready(function(){
   app.init();
 
   $('#infobox').on('click', function(){
-    if ($('#main').attr('class') == "hidden"){
-      $('#main').attr('class', 'active');
+    if ($('#instructions').attr('class') == "hidden"){
+      $('#instructions').attr('class', 'active');
     } else{
-      $('#main').attr('class', 'hidden');
+      $('#instructions').attr('class', 'hidden');
     }
   });
 
