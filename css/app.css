@@ -53,18 +53,20 @@ div.col-lg-12, div.col-lg-1, div.col-lg-11 {
 }
 
 #main{
+  background-color: white;
   position: fixed;
   left: 0;
   top: 0;
   width: 15%;
   padding: 20px;
   height: 100%;
+  z-index: 999;
 }
 
 #svg-wrapper {
   position: absolute;
   left: 15%;
-  width: 85%;
+  width: auto;
   overflow: scroll;
 }
 

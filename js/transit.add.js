@@ -539,7 +539,7 @@ app.views.TransitAddView = Backbone.View.extend({
       var first = true,
       lastmidPoint = false;
 
-      Object.keys(times_sorted).forEach(function(time, i) {
+      Object.keys(times_sorted).sort().forEach(function(time, i) {
 
         // points are stations at this time in this pathway
         var points = times_sorted[time].filter(function(s) {
@@ -553,7 +553,7 @@ app.views.TransitAddView = Backbone.View.extend({
 
         var startX = xScale(points[0].datetime.unix());
 
-        // random-ish amount by which to shuffle the x-value
+        // amount by which to shuffle the x-value
         // where the paths meet
         var shunt = xSpacer;
         var shuntX = startX + shunt;
