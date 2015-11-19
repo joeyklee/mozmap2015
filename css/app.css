@@ -53,14 +53,12 @@ div.col-lg-12, div.col-lg-1, div.col-lg-11 {
 }
 
 #main{
-  position: absolute;
+  position: fixed;
   left: 0;
   top: 0;
   width: 15%;
   padding: 20px;
   height: 100%;
-  overflow-y: scroll;
-  overflow-x: hidden;
 }
 
 #svg-wrapper {
@@ -70,10 +68,16 @@ div.col-lg-12, div.col-lg-1, div.col-lg-11 {
   overflow: scroll;
 }
 
+#mapinfo {
+  height: auto;
+}
+
 #stationInfo {
+  height: 100%;
   padding-top: 10px;
   border: 0;
   border-top: 3px;
   border-style: dotted;
   border-color: black;
+  overflow-y: scroll;
 }

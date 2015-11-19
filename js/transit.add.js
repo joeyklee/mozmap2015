@@ -84,32 +84,16 @@ app.views.TransitAddView = Backbone.View.extend({
 
   drawDots: function(svg, dots) {
     svg.selectAll("dot")
-    .data(dots).enter().append("circle")
-    .attr("r", function(d) {
-      return d.pointRadius;
-    })
-    .attr("cx", function(d) {
-      return d.x;
-    })
-    .attr("cy", function(d) {
-      return d.y;
-    })
-    .attr("class", function(d) {
-      return d.className || '';
-    })
-    .style("fill", function(d) {
-      return d.pointColor;
-    })
-    .style("stroke", function(d) {
-      return d.borderColor;
-    })
-    .style("stroke-width", function(d) {
-      return d.borderWidth;
-    })
-    .style("pointer-events", 'none')
-    .attr('id', function(d, i) {
-      return "dot_" + i;
-    });
+      .data(dots).enter().append("circle")
+      .attr("r", function(d) { return d.pointRadius })
+      .attr("cx", function(d) { return d.x })
+      .attr("cy", function(d) { return d.y })
+      .attr("class", function(d) { return d.className || '' })
+      .style("fill", function(d) { return d.pointColor })
+      .style("stroke", function(d) { return d.borderColor })
+      .style("stroke-width", function(d) { return d.borderWidth })
+      .style("pointer-events", 'none')
+      .attr('id', function(d, i) { return "dot_" + i });
   },
 
   drawRects: function(svg, rects) {
@@ -136,38 +120,18 @@ app.views.TransitAddView = Backbone.View.extend({
 
   drawLabels: function(svg, labels, options) {
     svg.selectAll("text")
-    .data(labels)
-    .enter().append("text")
-    .text(function(d) {
-      return d.text;
-    })
-    .attr("class", function(d) {
-      return d.className || '';
-    })
-    .attr("x", function(d) {
-      return d.labelX;
-    })
-    .attr("y", function(d) {
-      return d.labelY;
-    })
-    .attr("text-anchor", function(d) {
-      return d.anchor;
-    })
-    .attr("alignment-baseline", function(d) {
-      return d.alignment;
-    })
-    .style("font-family", function(d) {
-      return d.fontFamily;
-    })
-    .style("font-size", function(d) {
-      return d.fontSize;
-    })
-    .style("font-weight", function(d) {
-      return d.fontWeight;
-    })
-    .style("fill", function(d) {
-      return d.textColor;
-    });
+      .data(labels)
+      .enter().append("text")
+      .text(function(d) { return d.text; })
+      .attr("class", function(d) { return d.className || ''; })
+      .attr("x", function(d) { return d.labelX; })
+      .attr("y", function(d) { return d.labelY; })
+      .attr("text-anchor", function(d) { return d.anchor; })
+      .attr("alignment-baseline", function(d) { return d.alignment; })
+      .style("font-family", function(d) { return d.fontFamily; })
+      .style("font-size", function(d) { return d.fontSize; })
+      .style("font-weight", function(d) { return d.fontWeight; })
+      .style("fill", function(d) { return d.textColor; });
   },
 
   drawLines: function(svg, lines, options) {
