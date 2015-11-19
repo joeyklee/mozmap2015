@@ -129,7 +129,7 @@ app.views.TransitAddView = Backbone.View.extend({
     svg.selectAll("text")
       .data(labels)
       .enter().append("text")
-      .text(function(d) { return d.text; })
+      .text(function(d) { return d.label; })
       .attr("class", function(d) { return d.className || ''; })
       .attr("x", function(d) { return d.labelX; })
       .attr("y", function(d) { return d.labelY; })
@@ -246,11 +246,7 @@ app.views.TransitAddView = Backbone.View.extend({
       return p.pointRadius && p.pointRadius > 0;
     });
     labels = _.filter(points, function(p) {
-      return p.canonical
-        && (
-          p.label !== undefined
-          || p.symbol !== undefined
-        );
+      return p.canonical && p.label;
     });
     rects = _.filter(points, function(p) {
       return p.hubSize;
@@ -963,25 +959,13 @@ app.views.TransitAddView = Backbone.View.extend({
       label.className = label.className || '';
       label.fontFamily = fontFamily;
       label.alignment = "left";
-      // symbol
-      if (label.symbol) {
-        label.textColor = "#fff6fff";
-        label.fontSize = 1;
-        label.fontWeight = "bold";
-        label.anchor = "middle";
-        label.text = label.symbol;
-        label.labelX = label.labelX !== undefined ? label.labelX : label.x + 1;
-        label.labelY = label.labelY !== undefined ? label.labelY : label.y;
-        // label
-      } else {
-        label.textColor = textColor;
-        label.fontSize = label.fontSize || fontSize;
-        label.fontWeight = fontWeight;
-        label.anchor = label.anchor || "middle";
-        label.text = label.text || label.label;
-        label.labelX = label.labelX !== undefined ? label.labelX : label.x;
-        label.labelY = label.labelY !== undefined ? label.labelY : label.y - 10;
-      }
+
+      label.textColor = textColor;
+      label.fontSize = label.fontSize || fontSize;
+      label.fontWeight = fontWeight;
+      label.anchor = label.anchor || "middle";
+      label.labelX = label.labelX !== undefined ? label.labelX : label.x;
+      label.labelY = label.labelY !== undefined ? label.labelY : label.y - 10;
     });
 
     return labels;
