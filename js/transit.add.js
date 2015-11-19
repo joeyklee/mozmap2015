@@ -36,216 +36,11 @@ app.views.TransitAddView = Backbone.View.extend({
     this.setupMouseover(options);
   },
 
-// SECTION: axes
-
-  getXScale: function(stations, options, width, realdates) {
-    var paddingX = options.padding[0];
-    var times = helper.getDateTimes(stations).sort();
-    if (realdates) {
-      times = times.map(function(d) {
-        return moment.unix(d).format('dddd hh:mm A');
-      });
-    }
-
-    var xScale = d3.scale.ordinal()
-    .domain(times)
-    .rangePoints([paddingX, width - paddingX]);
-
-    options.xSpacer = (xScale(times[1]) - xScale(times[0])) / 3;
-
-    return xScale;
-  },
-
-  getYScale: function(options, height, maxPerSpace) {
-    var that = this;
-
-    // sum of all session maxima
-    var spacerows = 0;
-    Object.keys(maxPerSpace).forEach(function(space) {
-      spacerows += maxPerSpace[space];
-    });
-    var paddingY = options.padding[1];
-    var yScale = d3.scale.linear()
-    .domain([0, spacerows + 15])
-    .rangeRound([paddingY, height - paddingY]);
-    return yScale;
-  },
-
-  getY: function(station, times, breaks) {
-    var that = this,
-    datetime = station.datetime.unix(),
-    space = station.space;
-    var spacestart = breaks[space];
-    var spaceindex = times[space][datetime].indexOf(station) + 2;
-    return spacestart + spaceindex;
-  },
 
 // SECTION: draw graphical elements
 
-  drawDots: function(svg, dots) {
-    svg.selectAll("dot")
-    .data(dots).enter().append("circle")
-    .attr("r", function(d) {
-      return d.pointRadius;
-    })
-    .attr("cx", function(d) {
-      return d.x;
-    })
-    .attr("cy", function(d) {
-      return d.y;
-    })
-    .attr("class", function(d) {
-      return d.className || '';
-    })
-    .style("fill", function(d) {
-      return d.pointColor;
-    })
-    .style("stroke", function(d) {
-      return d.borderColor;
-    })
-    .style("stroke-width", function(d) {
-      return d.borderWidth;
-    })
-    .attr('id', function(d, i) {
-      return "dot_" + i;
-    });
-  },
 
-  drawRects: function(svg, rects) {
-    _.each(rects, function(r) {
-      svg.append("rect")
-      .attr("width", r.width)
-      .attr("height", r.height)
-      .attr("x", r.rectX)
-      .attr("y", r.rectY)
-      .attr("rx", r.borderRadius)
-      .attr("ry", r.borderRadius)
-      .attr("class", r.className)
-      .style("fill", r.pointColor)
-      .style("stroke", r.borderColor)
-      .style("stroke-width", r.borderWidth);
-    });
-  },
 
-  drawLabels: function(svg, labels, options) {
-    svg.selectAll("text")
-    .data(labels)
-    .enter().append("text")
-    .text(function(d) {
-      return d.text;
-    })
-    .attr("class", function(d) {
-      return d.className || '';
-    })
-    .attr("x", function(d) {
-      return d.labelX;
-    })
-    .attr("y", function(d) {
-      return d.labelY;
-    })
-    .attr("text-anchor", function(d) {
-      return d.anchor;
-    })
-    .attr("alignment-baseline", function(d) {
-      return d.alignment;
-    })
-    .style("font-family", function(d) {
-      return d.fontFamily;
-    })
-    .style("font-size", function(d) {
-      return d.fontSize;
-    })
-    .style("font-weight", function(d) {
-      return d.fontWeight;
-    })
-    .style("fill", function(d) {
-      return d.textColor;
-    });
-  },
-
-  drawLines: function(svg, lines, options) {
-    var that = this,
-        pathInterpolation = options.pathInterpolation,
-        animate = options.animate,
-        animationDuration = options.animationDuration,
-        svg_line;
-
-    svg_line = d3.svg.line()
-      .interpolate(pathInterpolation)
-      .x(function(d) { return d.x; })
-      .y(function(d) { return d.y; });
-
-    _.each(lines, function(line){
-
-      var points = line.points;
-
-      var bgpath = svg.append("path")
-        .attr("d", svg_line(points))
-        .attr("class", 'bgline-' + line.className)
-        .style("stroke", "black")
-        .style("stroke-width", line.strokeWidth + 2)
-        .style("stroke-opacity", line.strokeOpacity)
-        .style("fill", "none")
-        .style("stroke-dasharray", line.strokeDash);
-
-      var path = svg.append("path")
-        .attr("d", svg_line(points))
-        .attr("class", line.className)
-        .style("stroke", line.color)
-        .style("stroke-width", line.strokeWidth)
-        .style("stroke-opacity", line.strokeOpacity)
-        .style("fill", "none")
-        .style("stroke-dasharray", line.strokeDash);
-
-    });
-  },
-
-  drawXAxis: function(stations, svg, options, height, width) {
-    var that = this,
-    paddingY = options.padding[1],
-    xscale = that.getXScale(stations, options, width, true);
-
-    var xAxis = d3.svg.axis()
-    .orient("bottom")
-    .scale(xscale);
-
-    // draw x axis with labels and move to the bottom of the chart area
-    svg.append("g")
-    .attr("class", "xaxis") // give it a class so it can be used to select only xaxis labels  below
-    .attr("transform", "translate(0," + (height - paddingY) + ")")
-    .call(xAxis);
-
-    var xAxisTop = d3.svg.axis()
-    .orient("top")
-    .scale(xscale);
-
-    // draw x axis with labels and move to the bottom of the chart area
-    svg.append("g")
-    .attr("class", "xaxis") // give it a class so it can be used to select only xaxis labels  below
-    .attr("transform", "translate(0," + (paddingY) + ")")
-    .call(xAxisTop);
-
-    var times = helper.getDateTimes(stations).sort().forEach(function(d) {
-      var time = moment.unix(d).format('dddd hh:mm A');
-      var x = xscale(time);
-      svg.append("line")
-      .attr('x1', x)
-      .attr('x2', x)
-      .attr('y1', paddingY)
-      .attr('y2', height - paddingY)
-      .attr('stroke-dasharray', '2, 10')
-      .attr('stroke', '#333333')
-    });
-
-    // now rotate text on x axis
-    // solution based on idea here: https://groups.google.com/forum/?fromgroups#!topic/d3-js/heOBPQF3sAY
-    // first move the text left so no longer centered on the tick
-    // then rotate up to get 45 degrees.
-    // svg.selectAll(".xaxis text")  // select all the text elements for the xaxis
-    //   .attr("transform", function(d) {
-    //     return "translate(" + height*-2 + "," + height + ")rotate(-45)";
-    // });
-  },
 
   drawMap: function(stations, lines, legend, width, height, options) {
     var bgColor = options.bgColor,
@@ -369,96 +164,6 @@ app.views.TransitAddView = Backbone.View.extend({
     } while (prevPoint && xDiff < minXDiff); // ensure xDiff is above min
 
     return x;
-
-  },
-
-// SECTION: spaces
-
-  getYBreaks: function(maxes) {
-    breaks = {};
-    total = 0;
-    padding = 2;
-    for (space in maxes) {
-      if (maxes[space] > 0) {
-        breaks[space] = total + ((total == 0) ? 0 : padding);
-        total += maxes[space] + padding;
-      }
-    }
-    return breaks;
-  },
-
-  maxConcurrentSessions: function(sessions) {
-    // group sessions by space and time
-    var times = {};
-    sessions.forEach(function(s) {
-      var timekey = s.datetime.unix();
-      if (!times[s.space]) {
-        times[s.space] = {};
-      }
-      if (!times[s.space][timekey]) {
-        times[s.space][timekey] = [];
-      } else {
-        times[s.space][timekey].push(s);
-      }
-    });
-    // count maximum concurrent sessions in each space
-    maxes = {};
-    for (var space in times) {
-      maxes[space] = 0;
-      var spacetime = times[space];
-      for (var datetime in spacetime) {
-        var timesessions = spacetime[datetime];
-        if (timesessions.length > maxes[space]) {
-          maxes[space] = timesessions.length;
-        }
-      }
-    }
-    var maxes_sorted = {},
-    times_sorted = {};
-    window.helper.spaceOrder.forEach(function(s) {
-      if (maxes[s]) maxes_sorted[s] = maxes[s];
-      if (times[s]) times_sorted[s] = times[s];
-    });
-
-    return [times_sorted, maxes_sorted];
-  },
-
-  makeSpaces: function(svg, stations, options, height, width) {
-    var conc = this.maxConcurrentSessions(stations),
-    times = conc[0],
-    maxes = conc[1],
-    ybreaks = this.getYBreaks(maxes),
-    yscale = this.getYScale(options, height, maxes),
-    fill = "#000000";
-
-    console.log(options.spaces_data);
-    for (space in breaks) {
-      var icon = options.spaces_data[space].iconUrl;
-      var y = breaks[space];
-      svg.append('rect')
-      .attr('x', 0)
-      .attr('y', yscale(y))
-      .attr('height', 5)
-      .attr('width', width)
-      .attr('fill', fill)
-      .attr('fill-opacity', 0.4);
-
-      svg.append('text')
-      .attr('x', 50)
-      .attr('y', yscale(y) + 40)
-      .attr("font-family", "sans-serif")
-      .attr("font-size", "30px")
-      .attr("fill", "#444444")
-      .text(space);
-
-      svg.append('image')
-      .attr('xlink:href', icon)
-      .attr('x', 15)
-      .attr('y', yscale(y) + 15)
-      .attr('height', '30px')
-      .attr('width', '30px');
-
-    }
 
   },
 
@@ -710,6 +415,15 @@ app.views.TransitAddView = Backbone.View.extend({
   },
 
 // SECTION: stations
+
+  getY: function(station, times, breaks) {
+    var that = this,
+    datetime = station.datetime.unix(),
+    space = station.space;
+    var spacestart = breaks[space];
+    var spaceindex = times[space][datetime].indexOf(station) + 2;
+    return spacestart + spaceindex;
+  },
 
   makeEndLines: function(lines, options) {
     var pointRadiusLarge = options.pointRadiusLarge,
