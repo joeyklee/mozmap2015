@@ -530,6 +530,7 @@ app.views.TransitAddView = Backbone.View.extend({
     // to a set point before the next time interval
     var paths = [];
     pathways.forEach(function(pathway, pi) {
+
       var these_paths = [
         []
       ],
@@ -636,7 +637,7 @@ app.views.TransitAddView = Backbone.View.extend({
         }
         var npoints = [];
         var ni = i + 1;
-        while (npoints.length == 0 && ni < (ntimes - 1)) {
+        while (npoints.length == 0 && ni < (ntimes)) {
           var nextTime = Object.keys(times_sorted)[ni];
           npoints = times_sorted[nextTime].filter(function(s) {
             return s.pathways.indexOf(pathway) > -1;
