@@ -76,10 +76,15 @@ app.views.TransitAddView = Backbone.View.extend({
     datetime = station.datetime.unix(),
     space = station.space;
     var spacestart = breaks[space];
-
+    var nsessions = times[space][datetime].length.toFixed(2);
+    var maxsessions =  _.max(times[space], function(s) {
+      return s.length;
+    }).length.toFixed(2);
     var spaceindex = Object.keys(times).indexOf(space);
-    var sessindex = times[space][datetime].indexOf(station) + 2;
-    return spacestart + sessindex + (spaceindex * 0.1);
+    var sessindex = times[space][datetime].indexOf(station);
+    var sessiony = sessindex * (maxsessions / nsessions);
+    var shim = 2
+    return spacestart + sessiony + shim + (spaceindex * 0.1);
   },
 
 // SECTION: draw graphical elements
