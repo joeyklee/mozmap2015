@@ -16,7 +16,7 @@ var darkStyle = {
 };
 
 var config = {
-    "data_root_url": "http://mozilla.github.io/mozfest-schedule-app/",
+    "data_root_url": "http://raw.githubusercontent.com/mozilla/mozfest-event-app/backup-2015-mozfest-app",
     "width": 3900,
     "height": 2000,
     "bgColor": "#1a1a1a",
